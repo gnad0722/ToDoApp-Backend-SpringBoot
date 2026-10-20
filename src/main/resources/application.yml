@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/ToDo
+    username: postgres
+    password: 25102005
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        format_sql: true
+    database: postgresql
+    database-platform: org.hibernate.dialect.PostgreSQLDialect
+
+security:
+  jwt:
+    secret: Q7mK9xV2pL5nR8sT1wY4aB6cD0eF3gHjU9kM2vN5zXo
+    issuer: my-spring-boot-app
+    access-token-minutes: 15
