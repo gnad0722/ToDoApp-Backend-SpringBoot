@@ -9,26 +9,16 @@ import java.time.LocalDateTime;
 public class TaskPolicyFacade {
 
     private final TaskCompletePolicy taskCompletePolicy;
-    private final TaskTimePolicy taskTimePolicy;
 
 
-    public TaskPolicyFacade(TaskCompletePolicy taskCompletePolicy,
-                            TaskTimePolicy taskTimePolicy) {
+    public TaskPolicyFacade(TaskCompletePolicy taskCompletePolicy) {
         this.taskCompletePolicy = taskCompletePolicy;
-        this.taskTimePolicy = taskTimePolicy;
     }
 
-    public void validateDueDate(LocalDateTime dueDate) {
-        taskTimePolicy.validateDueDate(dueDate);
-    }
 
     public void validateCanComplete(Task task) {
         taskCompletePolicy.validateCanComplete(task);
     }
 
-    public void validateExpectTime(
-            LocalDateTime expectStart,
-            LocalDateTime expectEnd){
-        taskTimePolicy.validateExpectedTime(expectStart,expectEnd);
-    }
+
 }

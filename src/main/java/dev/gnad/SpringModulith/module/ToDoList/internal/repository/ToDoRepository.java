@@ -1,5 +1,6 @@
 package dev.gnad.SpringModulith.module.ToDoList.internal.repository;
 
+import dev.gnad.SpringModulith.common.database.BaseRepository;
 import dev.gnad.SpringModulith.module.ToDoList.domain.entity.ToDoList;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,8 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface ToDoRepository extends JpaRepository<ToDoList, Integer> {
-
-    Page<ToDoList> findByUser_id(Integer userId, Pageable pageable);
+public interface ToDoRepository extends BaseRepository<ToDoList> {
     Optional<ToDoList> findByIdAndUserId(Integer id, Integer userId);
+    Page<ToDoList> findByUser_id(Integer userId, Pageable pageable);
 }

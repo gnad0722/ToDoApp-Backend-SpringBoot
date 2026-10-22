@@ -2,6 +2,7 @@ package dev.gnad.SpringModulith.module.Task.service;
 
 import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
 import dev.gnad.SpringModulith.module.Task.domain.dto.CreateTaskDto;
+import dev.gnad.SpringModulith.module.Task.domain.dto.TaskFilterDto;
 import dev.gnad.SpringModulith.module.Task.domain.dto.UpdateTaskDto;
 import dev.gnad.SpringModulith.module.Task.domain.dto.TaskDto;
 import dev.gnad.SpringModulith.module.Task.domain.entity.Task;
@@ -67,7 +68,7 @@ public class TaskService {
         return newTask;
     }
 
-    public Page<Task> findByToDoId(Integer toDoId, Pageable pageable){
+    public Page<Task> findByToDoId(Integer toDoId, Pageable pageable, TaskFilterDto taskFilterDto){
         return this.taskRepository.findALlByToDoList_id(toDoId, pageable);
     }
 

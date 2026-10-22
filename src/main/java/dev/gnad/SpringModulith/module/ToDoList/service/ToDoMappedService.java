@@ -1,5 +1,6 @@
 package dev.gnad.SpringModulith.module.ToDoList.service;
 
+import dev.gnad.SpringModulith.common.policy.PolicyFacade;
 import dev.gnad.SpringModulith.module.Task.domain.dto.UpdateTaskDto;
 import dev.gnad.SpringModulith.module.Task.domain.entity.Task;
 import dev.gnad.SpringModulith.module.ToDoList.domain.dto.CreateToDoDto;
@@ -17,12 +18,13 @@ public class ToDoMappedService {
 
     private final AuthService authService;
 
-    private final ToDoPolicyFacade toDoPolicyFacade;
+    private final PolicyFacade policyFacade;
 
     public ToDoMappedService(AuthService authService,
-                             ToDoPolicyFacade toDoPolicyFacade) {
+                             ToDoPolicyFacade toDoPolicyFacade, PolicyFacade policyFacade) {
         this.authService = authService;
-        this.toDoPolicyFacade = toDoPolicyFacade;
+
+        this.policyFacade = policyFacade;
     }
 
     public ToDoResponseDto toResponse(ToDoList toDoList ){
@@ -42,7 +44,7 @@ public class ToDoMappedService {
         newList.setTopic(createToDoDto.topic());
 
         if (createToDoDto.startTime() != null){
-            this.toDoPolicyFacade.validateDueDate(createToDoDto.startTime());
+            this.policyFacade.validateDueDate(createToDoDto.startTime());
             newList.setStartTime(createToDoDto.startTime());
         }
 
@@ -58,7 +60,7 @@ public class ToDoMappedService {
         }
 
         if (updateToDoDto.startTime() != null){
-            this.toDoPolicyFacade.validateDueDate(updateToDoDto.startTime());
+            this.policyFacade.validateDueDate(updateToDoDto.startTime());
             toDoList.setStartTime(updateToDoDto.startTime());
         }
     }

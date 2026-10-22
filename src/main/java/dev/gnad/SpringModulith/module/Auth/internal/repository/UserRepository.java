@@ -1,5 +1,6 @@
 package dev.gnad.SpringModulith.module.Auth.internal.repository;
 
+import dev.gnad.SpringModulith.common.database.BaseRepository;
 import dev.gnad.SpringModulith.module.Auth.domain.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
@@ -7,7 +8,7 @@ import org.springframework.stereotype.Repository;
 import java.util.Optional;
 
 @Repository
-public interface UserRepository extends JpaRepository<User, Integer> {
+public interface UserRepository extends BaseRepository<User> {
     Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);
 }

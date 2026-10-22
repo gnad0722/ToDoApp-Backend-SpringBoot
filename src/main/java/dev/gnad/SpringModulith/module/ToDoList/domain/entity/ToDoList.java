@@ -14,6 +14,7 @@ import java.util.List;
 
 @Entity
 @Data
+@Inheritance(strategy = InheritanceType.JOINED)
 public class ToDoList extends BaseEntity {
 
     private String topic;

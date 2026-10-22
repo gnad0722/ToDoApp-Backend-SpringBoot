@@ -1,5 +1,6 @@
 package dev.gnad.SpringModulith.module.Task.service;
 
+import dev.gnad.SpringModulith.common.policy.PolicyFacade;
 import dev.gnad.SpringModulith.module.Task.domain.dto.CreateTaskDto;
 import dev.gnad.SpringModulith.module.Task.domain.dto.UpdateTaskDto;
 import dev.gnad.SpringModulith.module.Task.domain.dto.TaskDto;
@@ -12,10 +13,11 @@ import org.springframework.stereotype.Service;
 @Service
 public class TaskMappedService {
 
-    public final TaskPolicyFacade taskPolicyFacade;
 
-    public TaskMappedService(TaskPolicyFacade taskPolicyFacade) {
-        this.taskPolicyFacade = taskPolicyFacade;
+    private final PolicyFacade policyFacade;
+
+    public TaskMappedService(PolicyFacade policyFacade) {
+        this.policyFacade = policyFacade;
     }
 
     public Task toObject(CreateTaskDto createTaskDto, ToDoList toDoList){
@@ -26,17 +28,17 @@ public class TaskMappedService {
 
         if (createTaskDto.expectStart() != null){
 
-            this.taskPolicyFacade.validateDueDate(createTaskDto.expectStart());
+            this.policyFacade.validateDueDate(createTaskDto.expectStart());
             newTask.setExpectStart(createTaskDto.expectStart());
-
-            if (createTaskDto.expectEnd() != null){
-                this.taskPolicyFacade.validateExpectTime(
-                        createTaskDto.expectStart(),
-                        createTaskDto.expectEnd());
-                newTask.setExpectEnd(createTaskDto.expectEnd());
-            }
+        }
+        else {
+            newTask.setExpectStart(toDoList.getStartTime());
         }
 
+        if (createTaskDto.expectEnd() !=null){
+            this.policyFacade.validateTimeRange(
+                    newTask.getExpectStart(), createTaskDto.expectEnd());
+        }
 
         return newTask;
     }
@@ -64,17 +66,11 @@ public class TaskMappedService {
 
 
         if (updateTaskDto.expectStart() != null){
-            this.taskPolicyFacade.validateDueDate(updateTaskDto.expectStart());
+            this.policyFacade.validateDueDate(updateTaskDto.expectStart());
             task.setExpectStart(updateTaskDto.expectStart());
-            if (updateTaskDto.expectEnd() != null){
-                this.taskPolicyFacade.validateExpectTime(
-                        updateTaskDto.expectStart(),
-                        updateTaskDto.expectEnd());
-                task.setExpectEnd(updateTaskDto.expectEnd());
-            }
         }
         else if (updateTaskDto.expectEnd() != null){
-            this.taskPolicyFacade.validateExpectTime(task.getExpectStart(), updateTaskDto.expectEnd());
+            this.policyFacade.validateTimeRange(task.getExpectStart(), updateTaskDto.expectEnd());
             task.setExpectEnd(updateTaskDto.expectEnd());
         }
     }

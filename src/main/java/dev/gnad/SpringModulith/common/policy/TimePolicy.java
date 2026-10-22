@@ -1,11 +1,12 @@
-package dev.gnad.SpringModulith.module.Task.policy;
+package dev.gnad.SpringModulith.common.policy;
 
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Controller;
 
 import java.time.LocalDateTime;
 
 @Component
-public class TaskTimePolicy {
+public class TimePolicy {
 
     public void validateDueDate(LocalDateTime dueDate) {
         if (dueDate != null && dueDate.isBefore(LocalDateTime.now())) {
@@ -16,12 +17,12 @@ public class TaskTimePolicy {
     }
 
     public void validateExpectedTime(
-            LocalDateTime expectedStart,
-            LocalDateTime expectedEnd) {
+            LocalDateTime start,
+            LocalDateTime end) {
 
-        if (expectedStart != null
-                && expectedEnd != null
-                && !expectedStart.isBefore(expectedEnd)) {
+        if (start != null
+                && end != null
+                && !start.isBefore(end)) {
             throw new IllegalArgumentException(
                     "Expected start time must be before expected end time"
             );

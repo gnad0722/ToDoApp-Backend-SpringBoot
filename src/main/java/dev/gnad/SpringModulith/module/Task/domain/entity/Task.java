@@ -26,6 +26,7 @@ public class Task extends BaseEntity {
     private ToDoList toDoList;
 
 
+    //The default value of this field is start time of to do list which it belongs to
     private LocalDateTime expectStart;
 
 
