@@ -3,6 +3,8 @@ package dev.gnad.SpringModulith.module.Project.controller;
 import dev.gnad.SpringModulith.common.api.response.ApiResponse;
 import dev.gnad.SpringModulith.common.api.response.PageResponse;
 import dev.gnad.SpringModulith.common.provider.CurrentUserProvider;
+import dev.gnad.SpringModulith.common.utility.filter.FilterCondition;
+import dev.gnad.SpringModulith.common.utility.filter.FilterSpecification;
 import dev.gnad.SpringModulith.module.Project.domain.dto.CreateProjectDto;
 import dev.gnad.SpringModulith.module.Project.domain.dto.ProjectResponseDto;
 import dev.gnad.SpringModulith.module.Project.domain.dto.UpdateProjectDto;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Iterator;
+import java.util.List;
 
 
 @Controller
@@ -33,11 +36,16 @@ public class ProjectController {
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<PageResponse<ProjectResponseDto>>> getMyProject(
             @AuthenticationPrincipal Jwt jwt,
+            @RequestParam(required = false) List<String> filter,
             Pageable pageable
     ){
+        List<FilterCondition> conditions = FilterSpecification.parseFilters(filter);
+
         Page<Project> projects = this.projectService.findByUserId(
                 CurrentUserProvider.getUserId(jwt),
-                pageable);
+                pageable,
+                conditions
+        );
 
         PageResponse<ProjectResponseDto> response = PageResponse.from(
                 projects,

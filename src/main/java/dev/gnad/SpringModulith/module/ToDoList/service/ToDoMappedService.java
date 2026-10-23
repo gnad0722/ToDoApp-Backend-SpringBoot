@@ -9,8 +9,7 @@ import dev.gnad.SpringModulith.module.ToDoList.domain.dto.UpdateToDoDto;
 import dev.gnad.SpringModulith.module.ToDoList.domain.entity.ToDoList;
 import dev.gnad.SpringModulith.module.Auth.domain.entity.User;
 import dev.gnad.SpringModulith.module.Auth.service.AuthService;
-import dev.gnad.SpringModulith.module.ToDoList.policy.ToDoPolicyFacade;
-import dev.gnad.SpringModulith.module.ToDoList.policy.ToDoTimePolicy;
+
 import org.springframework.stereotype.Service;
 
 @Service
@@ -21,7 +20,7 @@ public class ToDoMappedService {
     private final PolicyFacade policyFacade;
 
     public ToDoMappedService(AuthService authService,
-                             ToDoPolicyFacade toDoPolicyFacade, PolicyFacade policyFacade) {
+                            PolicyFacade policyFacade) {
         this.authService = authService;
 
         this.policyFacade = policyFacade;

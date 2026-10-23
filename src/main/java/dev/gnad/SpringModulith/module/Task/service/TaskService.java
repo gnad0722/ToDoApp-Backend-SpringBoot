@@ -1,8 +1,10 @@
 package dev.gnad.SpringModulith.module.Task.service;
 
 import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
+import dev.gnad.SpringModulith.common.utility.filter.FilterCondition;
+import dev.gnad.SpringModulith.common.utility.filter.FilterSpecification;
 import dev.gnad.SpringModulith.module.Task.domain.dto.CreateTaskDto;
-import dev.gnad.SpringModulith.module.Task.domain.dto.TaskFilterDto;
+import dev.gnad.SpringModulith.module.Task.domain.dto.TaskFilterField;
 import dev.gnad.SpringModulith.module.Task.domain.dto.UpdateTaskDto;
 import dev.gnad.SpringModulith.module.Task.domain.dto.TaskDto;
 import dev.gnad.SpringModulith.module.Task.domain.entity.Task;
@@ -10,12 +12,14 @@ import dev.gnad.SpringModulith.module.Task.internal.repository.TaskRepository;
 import dev.gnad.SpringModulith.module.Task.policy.TaskPolicyFacade;
 import dev.gnad.SpringModulith.module.ToDoList.domain.entity.ToDoList;
 import dev.gnad.SpringModulith.module.ToDoList.service.ToDoService;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.transaction.Transactional;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class TaskService {
@@ -68,8 +72,17 @@ public class TaskService {
         return newTask;
     }
 
-    public Page<Task> findByToDoId(Integer toDoId, Pageable pageable, TaskFilterDto taskFilterDto){
-        return this.taskRepository.findALlByToDoList_id(toDoId, pageable);
+    public Page<Task> findByToDoId(Integer toDoId,
+                                   Pageable pageable,
+                                   List<FilterCondition> conditionList){
+
+        Specification<Task> specification = FilterSpecification.build(
+                conditionList,
+                TaskFilterField.TASK_FILTER_FIELDS
+        );
+
+
+        return this.taskRepository.findALlByToDoList_id(toDoId, pageable, specification);
     }
 
     public Task updateById(Integer taskId, UpdateTaskDto updateTaskDto){

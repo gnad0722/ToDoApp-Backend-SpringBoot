@@ -3,6 +3,8 @@ package dev.gnad.SpringModulith.module.ToDoList.controller;
 import dev.gnad.SpringModulith.common.api.response.ApiResponse;
 import dev.gnad.SpringModulith.common.api.response.PageResponse;
 import dev.gnad.SpringModulith.common.provider.CurrentUserProvider;
+import dev.gnad.SpringModulith.common.utility.filter.FilterCondition;
+import dev.gnad.SpringModulith.common.utility.filter.FilterSpecification;
 import dev.gnad.SpringModulith.module.ToDoList.domain.dto.CreateToDoDto;
 import dev.gnad.SpringModulith.module.ToDoList.domain.dto.ToDoResponseDto;
 import dev.gnad.SpringModulith.module.ToDoList.domain.dto.UpdateToDoDto;
@@ -15,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 
 @RestController()
@@ -30,11 +34,15 @@ public class ToDoController {
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<PageResponse<ToDoResponseDto>>> getMyToDo(
           @AuthenticationPrincipal Jwt jwt,
+          @RequestParam(required = false) List<String> filters,
           Pageable pageable)
     {
+        List<FilterCondition> conditions = FilterSpecification.parseFilters(filters);
+
         Page<ToDoList> toDoLists = this.toDoService.findByUserId(
                 CurrentUserProvider.getUserId(jwt)
-                , pageable
+                , pageable,
+                conditions
         );
         PageResponse<ToDoResponseDto> response = PageResponse.from(
                 toDoLists,
@@ -64,9 +72,13 @@ public class ToDoController {
     @GetMapping("/user/{id}")
     public ResponseEntity<ApiResponse<PageResponse<ToDoResponseDto>>> findByUserId(
             @PathVariable("id") Integer userId,
+            @RequestParam(required = false) List<String> filters,
             Pageable pageable)
     {
-        Page<ToDoList> toDoLists = this.toDoService.findByUserId(userId, pageable);
+
+        List<FilterCondition> conditions = FilterSpecification.parseFilters(filters);
+
+        Page<ToDoList> toDoLists = this.toDoService.findByUserId(userId, pageable, conditions);
         PageResponse<ToDoResponseDto> response = PageResponse.from(
                 toDoLists,
                 this.toDoService::mapToResponse

@@ -1,7 +1,10 @@
 package dev.gnad.SpringModulith.module.Project.service;
 
 import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
+import dev.gnad.SpringModulith.common.utility.filter.FilterCondition;
+import dev.gnad.SpringModulith.common.utility.filter.FilterSpecification;
 import dev.gnad.SpringModulith.module.Project.domain.dto.CreateProjectDto;
+import dev.gnad.SpringModulith.module.Project.domain.dto.ProjectFilter;
 import dev.gnad.SpringModulith.module.Project.domain.dto.ProjectResponseDto;
 import dev.gnad.SpringModulith.module.Project.domain.dto.UpdateProjectDto;
 import dev.gnad.SpringModulith.module.Project.domain.entity.Project;
@@ -9,7 +12,11 @@ import dev.gnad.SpringModulith.module.Project.internal.repository.ProjectReposit
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.logging.Filter;
 
 @Service
 public class ProjectService {
@@ -46,8 +53,13 @@ public class ProjectService {
     }
 
     public Page<Project> findByUserId(Integer userId,
-                                      Pageable pageable){
-        return this.projectRepository.findByUser_id(userId, pageable);
+                                      Pageable pageable,
+                                      List<FilterCondition> conditions){
+        Specification<Project> specification = FilterSpecification.build(
+                conditions,
+                ProjectFilter.PROJECT_FILTER_FIELDS
+        );
+        return this.projectRepository.findByUser_id(userId, pageable, specification);
     }
 
     public Project updateById(UpdateProjectDto updateProjectDto,

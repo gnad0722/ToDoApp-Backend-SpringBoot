@@ -1,7 +1,10 @@
 package dev.gnad.SpringModulith.module.ToDoList.service;
 
 import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
+import dev.gnad.SpringModulith.common.utility.filter.FilterCondition;
+import dev.gnad.SpringModulith.common.utility.filter.FilterSpecification;
 import dev.gnad.SpringModulith.module.ToDoList.domain.dto.CreateToDoDto;
+import dev.gnad.SpringModulith.module.ToDoList.domain.dto.ToDoFilter;
 import dev.gnad.SpringModulith.module.ToDoList.domain.dto.ToDoResponseDto;
 import dev.gnad.SpringModulith.module.ToDoList.domain.dto.UpdateToDoDto;
 import dev.gnad.SpringModulith.module.ToDoList.domain.entity.ToDoList;
@@ -10,7 +13,10 @@ import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+
+import java.util.List;
 
 @Service
 public class ToDoService {
@@ -76,8 +82,15 @@ public class ToDoService {
 
     public Page<ToDoList> findByUserId(
             Integer userId,
-            Pageable pageable){
-        return this.toDoRepository.findByUser_id(userId,pageable);
+            Pageable pageable,
+            List<FilterCondition> conditionList){
+
+        Specification<ToDoList> specification = FilterSpecification.build(
+                conditionList,
+                ToDoFilter.To_Do_FILTER_FIELDS
+        );
+
+        return this.toDoRepository.findByUser_id(userId,pageable, specification);
     }
 
     public void changeTaskCount(Integer toDoId, Integer taskCount){

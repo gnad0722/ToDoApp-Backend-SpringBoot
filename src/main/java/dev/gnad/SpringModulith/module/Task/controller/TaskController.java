@@ -3,13 +3,13 @@ package dev.gnad.SpringModulith.module.Task.controller;
 import dev.gnad.SpringModulith.common.api.response.ApiResponse;
 import dev.gnad.SpringModulith.common.api.response.PageResponse;
 import dev.gnad.SpringModulith.common.provider.CurrentUserProvider;
+import dev.gnad.SpringModulith.common.utility.filter.FilterCondition;
+import dev.gnad.SpringModulith.common.utility.filter.FilterSpecification;
 import dev.gnad.SpringModulith.module.Task.domain.dto.CreateTaskDto;
-import dev.gnad.SpringModulith.module.Task.domain.dto.TaskFilterDto;
 import dev.gnad.SpringModulith.module.Task.domain.dto.UpdateTaskDto;
 import dev.gnad.SpringModulith.module.Task.domain.dto.TaskDto;
 import dev.gnad.SpringModulith.module.Task.domain.entity.Task;
 import dev.gnad.SpringModulith.module.Task.service.TaskService;
-import dev.gnad.SpringModulith.module.ToDoList.service.ToDoService;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/task")
@@ -60,11 +62,14 @@ public class TaskController {
 
     @GetMapping("/todo/{id}")
     public ResponseEntity<ApiResponse<PageResponse<TaskDto>>> findByToDoId(
-            @ModelAttribute TaskFilterDto taskFilterDto,
+            @RequestParam(required = false) List<String> filter,
             @PathVariable("id") Integer toDoId,
             Pageable pageable)
     {
-            Page<Task> tasks = this.taskService.findByToDoId(toDoId, pageable, taskFilterDto);
+            List<FilterCondition>  conditions = FilterSpecification.parseFilters(filter);
+
+            Page<Task> tasks = this.taskService.findByToDoId(toDoId, pageable, conditions);
+
             PageResponse<TaskDto> response = PageResponse.from(tasks, this.taskService::mapToResponse);
             return ResponseEntity.ok(
                     ApiResponse.success(
