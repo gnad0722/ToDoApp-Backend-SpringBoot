@@ -1,7 +1,9 @@
 package dev.gnad.SpringModulith.module.Task.domain.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import dev.gnad.SpringModulith.common.domain.BaseEntity;
+import dev.gnad.SpringModulith.module.Note.domain.entity.Note;
 import dev.gnad.SpringModulith.module.ToDoList.domain.entity.ToDoList;
 import jakarta.annotation.Nullable;
 import jakarta.persistence.*;
@@ -34,6 +36,13 @@ public class Task extends BaseEntity {
 
     @Column(nullable = false)
     private boolean isDone = false;
+
+    @OneToOne(
+            mappedBy = "task",
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true)
+    @JsonManagedReference
+    private Note note;
 
 
 }
