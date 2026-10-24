@@ -7,6 +7,7 @@ import dev.gnad.SpringModulith.module.Auth.domain.dto.LoginDto;
 import dev.gnad.SpringModulith.module.Auth.domain.dto.RegisterDto;
 import dev.gnad.SpringModulith.module.Auth.domain.dto.UserResponseDto;
 import dev.gnad.SpringModulith.module.Auth.service.AuthService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -16,6 +17,10 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/auth")
+@Tag(
+        name = "Authentication",
+        description = "APIs for authentication"
+)
 public class AuthController {
 
     private final AuthService authService;

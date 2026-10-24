@@ -10,6 +10,7 @@ import dev.gnad.SpringModulith.module.Project.domain.dto.ProjectResponseDto;
 import dev.gnad.SpringModulith.module.Project.domain.dto.UpdateProjectDto;
 import dev.gnad.SpringModulith.module.Project.domain.entity.Project;
 import dev.gnad.SpringModulith.module.Project.service.ProjectService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,8 +24,12 @@ import java.util.Iterator;
 import java.util.List;
 
 
-@Controller
+@RestController()
 @RequestMapping("/api/project")
+@Tag(
+        name = "Project Management",
+        description = "APIs for managing project"
+)
 public class ProjectController {
 
     private final ProjectService projectService;

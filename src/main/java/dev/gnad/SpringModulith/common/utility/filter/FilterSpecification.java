@@ -59,7 +59,6 @@ public final class FilterSpecification {
 
             result = result.and(condition);
         }
-
         return result;
     }
 
@@ -82,20 +81,30 @@ public final class FilterSpecification {
         }
     }
 
+    public static <T> Specification<T> belongsTo(
+            Integer id,
+            String objectName) {
+
+        return (root, query, cb) ->
+                cb.equal(root.get(objectName).get("id"), id);
+    }
+
     private static <T> Specification<T> createSpecification(
             FilterCondition filter) {
 
+        System.out.println("Creating specification for: " + filter);
         return (root, query, cb) -> {
             Path<?> path = root.get(filter.field());
             FilterOperator operator = filter.operator();
             String value = filter.value();
-
             return switch (operator) {
                 case IS_NULL -> cb.isNull(path);
 
                 case IS_NOT_NULL -> cb.isNotNull(path);
 
-                case EQ -> cb.equal(path, convert(value, path.getJavaType()));
+                case EQ -> cb.equal(
+                        path, convert(value, path.getJavaType()));
+
 
                 case NOT_EQ -> cb.notEqual(
                         path, convert(value, path.getJavaType()));

@@ -59,7 +59,11 @@ public class ProjectService {
                 conditions,
                 ProjectFilter.PROJECT_FILTER_FIELDS
         );
-        return this.projectRepository.findByUser_id(userId, pageable, specification);
+        return this.projectRepository.findAll(
+                specification.and(
+                        FilterSpecification.belongsTo(userId,"user")
+                )
+                , pageable);
     }
 
     public Project updateById(UpdateProjectDto updateProjectDto,

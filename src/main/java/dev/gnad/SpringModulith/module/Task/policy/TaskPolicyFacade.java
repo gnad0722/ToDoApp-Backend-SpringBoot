@@ -9,10 +9,13 @@ import java.time.LocalDateTime;
 public class TaskPolicyFacade {
 
     private final TaskCompletePolicy taskCompletePolicy;
+    private final TaskTimePolicy taskTimePolicy;
 
 
-    public TaskPolicyFacade(TaskCompletePolicy taskCompletePolicy) {
+    public TaskPolicyFacade(TaskCompletePolicy taskCompletePolicy,
+                            TaskTimePolicy taskTimePolicy) {
         this.taskCompletePolicy = taskCompletePolicy;
+        this.taskTimePolicy = taskTimePolicy;
     }
 
 
@@ -20,5 +23,10 @@ public class TaskPolicyFacade {
         taskCompletePolicy.validateCanComplete(task);
     }
 
+    public void validateStartTime(
+            LocalDateTime startTask,
+            LocalDateTime startToDo) {
+        taskTimePolicy.validateStartTime(startTask,startToDo);
+    }
 
-}
+    }

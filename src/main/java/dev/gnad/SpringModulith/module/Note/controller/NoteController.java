@@ -5,13 +5,18 @@ import dev.gnad.SpringModulith.module.Note.domain.dto.NoteCreateDto;
 import dev.gnad.SpringModulith.module.Note.domain.dto.NoteResponseDto;
 import dev.gnad.SpringModulith.module.Note.domain.dto.UpdateNoteDto;
 import dev.gnad.SpringModulith.module.Note.service.NoteService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
 
-@Controller
+@RestController
 @RequestMapping("/api/note")
+@Tag(
+        name = "Note Management",
+        description = "APIs for managing notes"
+)
 public class NoteController {
 
     private final NoteService noteService;

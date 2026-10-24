@@ -3,6 +3,7 @@ package dev.gnad.SpringModulith.module.ToDoList.service;
 import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
 import dev.gnad.SpringModulith.common.utility.filter.FilterCondition;
 import dev.gnad.SpringModulith.common.utility.filter.FilterSpecification;
+import dev.gnad.SpringModulith.module.Task.domain.entity.Task;
 import dev.gnad.SpringModulith.module.ToDoList.domain.dto.CreateToDoDto;
 import dev.gnad.SpringModulith.module.ToDoList.domain.dto.ToDoFilter;
 import dev.gnad.SpringModulith.module.ToDoList.domain.dto.ToDoResponseDto;
@@ -90,7 +91,12 @@ public class ToDoService {
                 ToDoFilter.To_Do_FILTER_FIELDS
         );
 
-        return this.toDoRepository.findByUser_id(userId,pageable, specification);
+
+        return this.toDoRepository.findAll(
+                specification.and(
+                        FilterSpecification.belongsTo(userId,"user")
+        )
+                , pageable);
     }
 
     public void changeTaskCount(Integer toDoId, Integer taskCount){

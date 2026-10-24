@@ -16,8 +16,12 @@ public class TaskMappedService {
 
     private final PolicyFacade policyFacade;
 
-    public TaskMappedService(PolicyFacade policyFacade) {
+    private final TaskPolicyFacade taskPolicyFacade;
+
+    public TaskMappedService(PolicyFacade policyFacade,
+                             TaskPolicyFacade taskPolicyFacade) {
         this.policyFacade = policyFacade;
+        this.taskPolicyFacade = taskPolicyFacade;
     }
 
     public Task toObject(CreateTaskDto createTaskDto, ToDoList toDoList){
@@ -29,6 +33,8 @@ public class TaskMappedService {
         if (createTaskDto.expectStart() != null){
 
             this.policyFacade.validateDueDate(createTaskDto.expectStart());
+
+            this.taskPolicyFacade.validateStartTime(createTaskDto.expectStart(), toDoList.getStartTime());
             newTask.setExpectStart(createTaskDto.expectStart());
         }
         else {
@@ -38,6 +44,7 @@ public class TaskMappedService {
         if (createTaskDto.expectEnd() !=null){
             this.policyFacade.validateTimeRange(
                     newTask.getExpectStart(), createTaskDto.expectEnd());
+            newTask.setExpectEnd(createTaskDto.expectEnd());
         }
 
         return newTask;
@@ -52,7 +59,8 @@ public class TaskMappedService {
                 task.getExpectEnd(),
                 task.getCreatedAt(),
                 task.getLastModifiedAt(),
-                task.getToDoList().getId());
+                task.getToDoList().getId(),
+                task.getNote());
     }
 
     public void patch(Task task, UpdateTaskDto updateTaskDto){
@@ -67,9 +75,12 @@ public class TaskMappedService {
 
         if (updateTaskDto.expectStart() != null){
             this.policyFacade.validateDueDate(updateTaskDto.expectStart());
+            if (updateTaskDto.expectEnd() == null){
+                this.policyFacade.validateTimeRange(updateTaskDto.expectStart(),task.getExpectEnd());
+            }
             task.setExpectStart(updateTaskDto.expectStart());
         }
-        else if (updateTaskDto.expectEnd() != null){
+        if (updateTaskDto.expectEnd() != null){
             this.policyFacade.validateTimeRange(task.getExpectStart(), updateTaskDto.expectEnd());
             task.setExpectEnd(updateTaskDto.expectEnd());
         }

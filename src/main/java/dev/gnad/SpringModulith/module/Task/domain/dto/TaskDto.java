@@ -1,5 +1,7 @@
 package dev.gnad.SpringModulith.module.Task.domain.dto;
 
+import dev.gnad.SpringModulith.module.Note.domain.entity.Note;
+
 import java.time.LocalDateTime;
 import java.util.Iterator;
 
@@ -12,6 +14,7 @@ public record TaskDto(
         LocalDateTime expectEnd,
         LocalDateTime createdAt,
         LocalDateTime lastModifiedAt,
-        Integer toDoId
-) {
+        Integer toDoId,
+        Note note)
+{
 }

@@ -10,6 +10,7 @@ import dev.gnad.SpringModulith.module.Task.domain.dto.UpdateTaskDto;
 import dev.gnad.SpringModulith.module.Task.domain.dto.TaskDto;
 import dev.gnad.SpringModulith.module.Task.domain.entity.Task;
 import dev.gnad.SpringModulith.module.Task.service.TaskService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +23,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/task")
+@Tag(
+        name = "Task Management",
+        description = "APIs for managing tasks"
+)
 public class TaskController {
     private final TaskService taskService;
 
@@ -48,6 +53,7 @@ public class TaskController {
             @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody()CreateTaskDto taskDto)
     {
+        System.out.println(taskDto);
         TaskDto response = this.taskService.mapToResponse(
                 this.taskService.create(
                         taskDto,
@@ -83,6 +89,7 @@ public class TaskController {
     public ResponseEntity<ApiResponse<TaskDto>> updateByTaskId(
             @PathVariable("id") Integer id,
             @RequestBody UpdateTaskDto updateTaskDto){
+
         TaskDto response = this.taskService.mapToResponse(
                 this.taskService.updateById(id, updateTaskDto));
 

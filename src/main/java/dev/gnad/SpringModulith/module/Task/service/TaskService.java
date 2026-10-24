@@ -46,7 +46,9 @@ public class TaskService {
     }
 
     public Task findById(Integer id){
-        return this.taskRepository.findById(id).orElse(new Task());
+        return this.taskRepository.findById(id).orElseThrow(
+                ()-> new NotFoundException("Not found task with id: "+id)
+        );
     }
 
     @Transactional
@@ -75,14 +77,15 @@ public class TaskService {
     public Page<Task> findByToDoId(Integer toDoId,
                                    Pageable pageable,
                                    List<FilterCondition> conditionList){
-
         Specification<Task> specification = FilterSpecification.build(
                 conditionList,
                 TaskFilterField.TASK_FILTER_FIELDS
         );
 
-
-        return this.taskRepository.findALlByToDoList_id(toDoId, pageable, specification);
+        return this.taskRepository.findAll( specification.and(
+                FilterSpecification.belongsTo(toDoId,"toDoList")
+        )
+                ,pageable);
     }
 
     public Task updateById(Integer taskId, UpdateTaskDto updateTaskDto){

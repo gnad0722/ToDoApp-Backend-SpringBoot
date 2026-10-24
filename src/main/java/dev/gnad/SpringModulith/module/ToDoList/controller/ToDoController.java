@@ -10,6 +10,7 @@ import dev.gnad.SpringModulith.module.ToDoList.domain.dto.ToDoResponseDto;
 import dev.gnad.SpringModulith.module.ToDoList.domain.dto.UpdateToDoDto;
 import dev.gnad.SpringModulith.module.ToDoList.domain.entity.ToDoList;
 import dev.gnad.SpringModulith.module.ToDoList.service.ToDoService;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,6 +24,10 @@ import java.util.List;
 
 @RestController()
 @RequestMapping("/api/todo")
+@Tag(
+        name = "To Do List Management",
+        description = "APIs for managing to-do list"
+)
 public class ToDoController {
 
     private final ToDoService toDoService;

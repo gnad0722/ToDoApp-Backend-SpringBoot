@@ -13,5 +13,4 @@ import java.util.Optional;
 @Repository
 public interface ToDoRepository extends BaseRepository<ToDoList> {
     Optional<ToDoList> findByIdAndUserId(Integer id, Integer userId);
-    Page<ToDoList> findByUser_id(Integer userId, Pageable pageable, Specification<ToDoList> specification);
 }
