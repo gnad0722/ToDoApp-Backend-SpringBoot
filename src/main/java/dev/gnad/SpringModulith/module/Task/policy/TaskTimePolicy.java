@@ -1,7 +1,10 @@
 package dev.gnad.SpringModulith.module.Task.policy;
 
+import org.springframework.stereotype.Component;
+
 import java.time.LocalDateTime;
 
+@Component
 public class TaskTimePolicy {
     public void validateStartTime(
             LocalDateTime startTask,
