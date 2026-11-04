@@ -2,10 +2,7 @@ package dev.gnad.SpringModulith.module.Auth.controller;
 
 import dev.gnad.SpringModulith.common.api.response.ApiResponse;
 import dev.gnad.SpringModulith.common.provider.CurrentUserProvider;
-import dev.gnad.SpringModulith.module.Auth.domain.dto.AuthResponse;
-import dev.gnad.SpringModulith.module.Auth.domain.dto.LoginDto;
-import dev.gnad.SpringModulith.module.Auth.domain.dto.RegisterDto;
-import dev.gnad.SpringModulith.module.Auth.domain.dto.UserResponseDto;
+import dev.gnad.SpringModulith.module.Auth.domain.dto.*;
 import dev.gnad.SpringModulith.module.Auth.service.AuthService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -13,6 +10,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -65,6 +63,32 @@ public class AuthController {
                 ApiResponse.success(
                         response,
                         "Login successfully")
+        );
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<ApiResponse<Void>> logout(
+            @RequestBody @Valid RefreshTokenDto refreshTokenDto){
+        this.authService.logout(refreshTokenDto.rawToken());
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        null,
+                        "Logout successfully")
+        );
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<ApiResponse<AuthResponse>> refresh(
+            @RequestBody @Valid RefreshTokenDto refreshTokenDto
+    ){
+
+        AuthResponse response = this.authService.refresh(refreshTokenDto.rawToken());
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        response,
+                        "Refresh Token Successfully"
+                )
         );
     }
 }

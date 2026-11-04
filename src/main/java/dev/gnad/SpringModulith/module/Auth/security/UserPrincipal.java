@@ -38,4 +38,8 @@ public class UserPrincipal implements UserDetails {
     public @NonNull Integer getUserId() {
         return user.getId();
     }
+
+    public @NonNull User getUser(){
+        return user;
+    }
 }

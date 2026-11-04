@@ -23,4 +23,5 @@ security:
   jwt:
     secret: Q7mK9xV2pL5nR8sT1wY4aB6cD0eF3gHjU9kM2vN5zXo
     issuer: my-spring-boot-app
-    access-token-minutes: 60
+    access-token-minutes: 15
+    refresh-token-expiration: 604800000
