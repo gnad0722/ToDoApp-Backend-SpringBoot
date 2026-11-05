@@ -13,7 +13,18 @@ spring:
         format_sql: true
     database: postgresql
     database-platform: org.hibernate.dialect.PostgreSQLDialect
-
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: example@gmail.com
+    password: ${MAIL_PASSWORD}
+    properties:
+      mail:
+        smtp:
+          auth: true
+          starttls:
+            enable: true
+            required: true
 logging:
   level:
     org.hibernate.SQL: DEBUG
@@ -25,3 +36,4 @@ security:
     issuer: my-spring-boot-app
     access-token-minutes: 15
     refresh-token-expiration: 604800000
+    reset-password-token-expiration: 900000

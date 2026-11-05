@@ -1,12 +1,13 @@
 package dev.gnad.SpringModulith.module.Auth.service;
 
 import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
+import dev.gnad.SpringModulith.common.email.EmailSenderService;
+import dev.gnad.SpringModulith.common.otp.domain.entity.Otp;
+import dev.gnad.SpringModulith.common.otp.service.OtpService;
 import dev.gnad.SpringModulith.common.security.JwtService;
-import dev.gnad.SpringModulith.module.Auth.domain.dto.AuthResponse;
-import dev.gnad.SpringModulith.module.Auth.domain.dto.LoginDto;
-import dev.gnad.SpringModulith.module.Auth.domain.dto.RegisterDto;
-import dev.gnad.SpringModulith.module.Auth.domain.dto.UserResponseDto;
+import dev.gnad.SpringModulith.module.Auth.domain.dto.*;
 import dev.gnad.SpringModulith.module.Auth.domain.entity.RefreshToken;
+import dev.gnad.SpringModulith.module.Auth.domain.entity.ResetPasswordToken;
 import dev.gnad.SpringModulith.module.Auth.domain.entity.User;
 import dev.gnad.SpringModulith.module.Auth.internal.repository.UserRepository;
 import dev.gnad.SpringModulith.module.Auth.security.UserPrincipal;
@@ -29,14 +30,19 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
     public final JwtService jwtService;
     public final RefreshTokenService refreshTokenService;
-
+    public final ResetPasswordService resetPasswordService;
+    public final OtpService otpService;
+    public final EmailSenderService emailSenderService;
 
     public AuthService(UserRepository userRepository,
                        ApplicationEventPublisher publisher,
                        UserMappedService userMappedService,
-                       PasswordEncoder passwordEncoder, AuthenticationManager authenticationManager,
+                       PasswordEncoder passwordEncoder,
+                       AuthenticationManager authenticationManager,
                        JwtService jwtService,
-                       RefreshTokenService refreshTokenService) {
+                       RefreshTokenService refreshTokenService,
+                       ResetPasswordService resetPasswordService,
+                       OtpService otpService, EmailSenderService emailSenderService4) {
         this.userRepository = userRepository;
         this.publisher = publisher;
         this.userMappedService = userMappedService;
@@ -44,6 +50,9 @@ public class AuthService {
         this.authenticationManager = authenticationManager;
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
+        this.resetPasswordService = resetPasswordService;
+        this.otpService = otpService;
+        this.emailSenderService = emailSenderService4;
     }
 
     public UserResponseDto mapToResponse(User user){
@@ -98,6 +107,48 @@ public class AuthService {
                 refreshTokenService.validateRefreshToken(rawRefreshToken);
 
         refreshTokenService.revokedToken(refreshToken);
+    }
+
+
+
+    @Transactional
+    public void sendOtpToEmail(EmailDto emailDto){
+        User user = this.userRepository.findByEmail(emailDto.email())
+                .orElseThrow(()->
+                new NotFoundException("Not found the user with email: "+emailDto.email())
+                );
+
+        String otp = this.otpService.createOtp(user);
+
+        this.emailSenderService.sendOtp(user.getEmail(), otp);
+    }
+
+    public TokenDto validatOtp(VerifyOtpDto verifyOtpDto){
+        Otp validatedOtp = this.otpService.validateOtp(verifyOtpDto.otp(), verifyOtpDto.email());
+
+
+
+        String token = this.resetPasswordService.createResetToken(validatedOtp.getUser());
+
+
+        return new TokenDto(token);
+    }
+
+    @Transactional
+    public User updatePassword(ResetPasswordDto resetPasswordDto){
+
+        ResetPasswordToken resetPasswordToken = this.resetPasswordService.validateToken(
+                resetPasswordDto.resetPasswordToken());
+
+        User user = resetPasswordToken.getUser();
+
+        user.setPassword(resetPasswordDto.newPassword());
+
+        this.userRepository.save(user);
+
+        this.resetPasswordService.revoke(resetPasswordToken);
+
+        return user;
     }
 
     public User findById(Integer id){

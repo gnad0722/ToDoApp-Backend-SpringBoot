@@ -6,9 +6,11 @@ import dev.gnad.SpringModulith.module.Auth.domain.dto.*;
 import dev.gnad.SpringModulith.module.Auth.service.AuthService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
+import org.antlr.v4.runtime.Token;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.security.core.parameters.P;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Repository;
 import org.springframework.web.bind.annotation.*;
@@ -91,4 +93,47 @@ public class AuthController {
                 )
         );
     }
+
+    @PostMapping("/forgot-password")
+    public ResponseEntity<ApiResponse<Void>> sendOtpToEmail(
+            @RequestBody @Valid EmailDto emailDto
+    ){
+        this.authService.sendOtpToEmail(emailDto);
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        null,
+                        "OTP is sent to email successfully"
+                )
+        );
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<ApiResponse<TokenDto>> verifyOtp(
+            @RequestBody @Valid VerifyOtpDto verifyOtpDto
+    ){
+        TokenDto response = this.authService.validatOtp(verifyOtpDto);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        response,
+                        "OTP is sent to email successfully"
+                )
+        );
+    }
+
+    @PostMapping("/reset-password")
+    public ResponseEntity<ApiResponse<UserResponseDto>> resetPassword(
+            @RequestBody @Valid ResetPasswordDto resetPasswordDto
+    ){
+        UserResponseDto response = this.authService.mapToResponse(
+                this.authService.updatePassword(resetPasswordDto));
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        response,
+                        "Reset Password Successfully!"
+                )
+        );
+    }
+
 }
