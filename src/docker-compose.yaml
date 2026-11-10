@@ -1,0 +1,7 @@
+services:
+  redis:
+    image: redis:8.12-rc2-trixie
+    container_name: shop-redis
+    ports:
+      - "6379:6379"
+

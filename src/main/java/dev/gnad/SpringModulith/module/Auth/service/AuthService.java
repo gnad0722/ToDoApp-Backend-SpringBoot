@@ -1,6 +1,7 @@
 package dev.gnad.SpringModulith.module.Auth.service;
 
 import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
+import dev.gnad.SpringModulith.common.cache.constants.CacheName;
 import dev.gnad.SpringModulith.common.email.EmailSenderService;
 import dev.gnad.SpringModulith.common.otp.domain.entity.Otp;
 import dev.gnad.SpringModulith.common.otp.service.OtpService;
@@ -12,6 +13,7 @@ import dev.gnad.SpringModulith.module.Auth.domain.entity.User;
 import dev.gnad.SpringModulith.module.Auth.internal.repository.UserRepository;
 import dev.gnad.SpringModulith.module.Auth.security.UserPrincipal;
 import jakarta.transaction.Transactional;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
