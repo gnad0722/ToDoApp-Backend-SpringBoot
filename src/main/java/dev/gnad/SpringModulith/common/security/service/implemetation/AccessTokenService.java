@@ -1,7 +1,6 @@
-package dev.gnad.SpringModulith.common.security;
+package dev.gnad.SpringModulith.common.security.service.implemetation;
 
 
-import dev.gnad.SpringModulith.module.Auth.domain.entity.User;
 import dev.gnad.SpringModulith.module.Auth.security.UserPrincipal;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
@@ -13,21 +12,20 @@ import org.springframework.security.oauth2.jwt.JwtEncoder;
 import org.springframework.security.oauth2.jwt.JwtEncoderParameters;
 import org.springframework.stereotype.Service;
 
-import java.security.Principal;
 import java.time.Instant;
 import java.util.List;
 
 @Service
-public class JwtService {
+public class AccessTokenService {
 
     private final JwtEncoder jwtEncoder;
     private final long accessTokenMinutes;
     private final String issuer;
 
-    public JwtService(JwtEncoder jwtEncoder,
-                      @Value("${security.jwt.issuer}")
+    public AccessTokenService(JwtEncoder jwtEncoder,
+                              @Value("${security.jwt.issuer}")
                       String issuer,
-                      @Value("${security.jwt.access-token-minutes}")
+                              @Value("${security.jwt.access-token-minutes}")
                       long accessTokenMinutes
                      )
     {

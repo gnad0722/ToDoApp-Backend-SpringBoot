@@ -4,7 +4,9 @@ import dev.gnad.SpringModulith.common.cache.constants.CacheName;
 import dev.gnad.SpringModulith.module.Auth.domain.entity.User;
 import org.springframework.data.redis.serializer.JacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
+import org.springframework.stereotype.Component;
 
+@Component
 public class UserSerializationStrategy implements SerializationStrategy{
     @Override
     public String getCacheName() {

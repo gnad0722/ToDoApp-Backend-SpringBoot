@@ -3,9 +3,10 @@ package dev.gnad.SpringModulith.common.cache.configuration;
 import dev.gnad.SpringModulith.common.cache.constants.CacheName;
 import dev.gnad.SpringModulith.common.cache.serializaion.SerializationStrategy;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.stereotype.Component;
 
 import java.time.Duration;
-
+@Component
 public class UserCachingConfiguration implements CachingConfiguration {
 
 

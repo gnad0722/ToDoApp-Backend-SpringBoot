@@ -3,12 +3,13 @@ package dev.gnad.SpringModulith.common.cache.configuration;
 import dev.gnad.SpringModulith.common.cache.serializaion.SerializationStrategy;
 import org.hibernate.boot.model.source.spi.Caching;
 import org.springframework.data.redis.cache.RedisCacheConfiguration;
+import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-
+@Component
 public class CachingConfigurationFactory {
 
     private final Map<String, CachingConfiguration>  cachingConfigurationMap;
@@ -27,7 +28,6 @@ public class CachingConfigurationFactory {
                                                     SerializationStrategy strategy,
                                                     RedisCacheConfiguration defaultConfiguration
     ){
-
         CachingConfiguration configuration = this.cachingConfigurationMap.get(cacheName);
 
         if (configuration == null) {

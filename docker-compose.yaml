@@ -1,0 +1,21 @@
+services:
+  redis:
+    image: redis:8.12-rc2-trixie
+    container_name: shop-redis
+    ports:
+      - "6379:6379"
+  postgres:
+    image: postgres:17
+    container_name: todo-postgres
+    environment:
+      POSTGRES_DB: ToDo
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 25102005
+    ports:
+      - "5433:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
+

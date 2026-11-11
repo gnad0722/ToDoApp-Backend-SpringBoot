@@ -1,31 +1,17 @@
-package dev.gnad.SpringModulith.module.Auth.domain.entity;
+package dev.gnad.SpringModulith.common.token.domain.entity;
 
-
+import dev.gnad.SpringModulith.module.Auth.domain.entity.User;
 import jakarta.persistence.*;
 import lombok.Data;
-import org.springframework.stereotype.Component;
 
 import java.time.Instant;
 
-@Entity
 
-//Database index is data structure which will help retrieving records
-// more efficiently without to examine every row in table, but it also consumes storage and adds overhead when inserting or updating data.
-@Table(
-        name = "refresh_token",
-        indexes = {
-                @Index(
-                        name = "idx_refresh_token_hash",
-                        columnList = "token_hash",
-                        unique = true
-                )
-        }
-)
+@MappedSuperclass
 @Data
-public class RefreshToken {
-
+public class BaseToken {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
     private Long id;
 
     @Column(name = "token_hash", nullable = false, unique = true)
@@ -48,8 +34,8 @@ public class RefreshToken {
 
     public boolean isExpired(){
         return Instant.now().isAfter(expireAt);
-    }
 
+    }
     public boolean isRevoked(){
         return revokedAt != null;
     }

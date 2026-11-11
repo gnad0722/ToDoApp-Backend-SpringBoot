@@ -5,7 +5,7 @@ spring:
   cache:
     type: redis
   datasource:
-    url: jdbc:postgresql://localhost:5432/ToDo
+    url: jdbc:postgresql://127.0.0.1:5433/ToDo
     username: postgres
     password: 25102005
     driver-class-name: org.postgresql.Driver

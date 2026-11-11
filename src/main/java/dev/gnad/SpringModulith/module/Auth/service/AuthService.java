@@ -1,60 +1,47 @@
 package dev.gnad.SpringModulith.module.Auth.service;
 
 import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
-import dev.gnad.SpringModulith.common.cache.constants.CacheName;
 import dev.gnad.SpringModulith.common.email.EmailSenderService;
 import dev.gnad.SpringModulith.common.otp.domain.entity.Otp;
 import dev.gnad.SpringModulith.common.otp.service.OtpService;
-import dev.gnad.SpringModulith.common.security.JwtService;
+import dev.gnad.SpringModulith.common.security.service.facade.AuthenticationTokenService;
+import dev.gnad.SpringModulith.common.security.service.facade.SecurityService;
+import dev.gnad.SpringModulith.common.token.domain.entity.BaseToken;
 import dev.gnad.SpringModulith.module.Auth.domain.dto.*;
-import dev.gnad.SpringModulith.module.Auth.domain.entity.RefreshToken;
-import dev.gnad.SpringModulith.module.Auth.domain.entity.ResetPasswordToken;
 import dev.gnad.SpringModulith.module.Auth.domain.entity.User;
 import dev.gnad.SpringModulith.module.Auth.internal.repository.UserRepository;
 import dev.gnad.SpringModulith.module.Auth.security.UserPrincipal;
 import jakarta.transaction.Transactional;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.context.ApplicationEventPublisher;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-
-import java.nio.file.attribute.UserPrincipalLookupService;
 
 @Service
 public class AuthService {
     private final UserRepository userRepository;
     private final ApplicationEventPublisher publisher;
     private final UserMappedService userMappedService;
-    private final PasswordEncoder passwordEncoder;
-    private final AuthenticationManager authenticationManager;
-    public final JwtService jwtService;
-    public final RefreshTokenService refreshTokenService;
-    public final ResetPasswordService resetPasswordService;
-    public final OtpService otpService;
-    public final EmailSenderService emailSenderService;
+    private final OtpService otpService;
+    private final EmailSenderService emailSenderService;
+    private final SecurityService securityService;
+    private final AuthenticationTokenService authenticationTokenService;
+
 
     public AuthService(UserRepository userRepository,
                        ApplicationEventPublisher publisher,
                        UserMappedService userMappedService,
-                       PasswordEncoder passwordEncoder,
-                       AuthenticationManager authenticationManager,
-                       JwtService jwtService,
-                       RefreshTokenService refreshTokenService,
-                       ResetPasswordService resetPasswordService,
-                       OtpService otpService, EmailSenderService emailSenderService4) {
+                       OtpService otpService,
+                       EmailSenderService emailSenderService4,
+                       SecurityService securityService,
+                       AuthenticationTokenService authenticationTokenService) {
         this.userRepository = userRepository;
         this.publisher = publisher;
         this.userMappedService = userMappedService;
-        this.passwordEncoder = passwordEncoder;
-        this.authenticationManager = authenticationManager;
-        this.jwtService = jwtService;
-        this.refreshTokenService = refreshTokenService;
-        this.resetPasswordService = resetPasswordService;
         this.otpService = otpService;
         this.emailSenderService = emailSenderService4;
+        this.securityService = securityService;
+        this.authenticationTokenService = authenticationTokenService;
     }
 
     public UserResponseDto mapToResponse(User user){
@@ -71,7 +58,7 @@ public class AuthService {
                 );
             }
 
-            String hashedPassword = passwordEncoder.encode(registerDto.password());
+            String hashedPassword = this.securityService.hashPassword(registerDto.password());
 
             return this.userRepository.save(
                     this.userMappedService.toObject(new RegisterDto(
@@ -84,18 +71,16 @@ public class AuthService {
 
     public AuthResponse login(LoginDto loginDto){
         Authentication authentication =
-                authenticationManager.authenticate(
-                        new UsernamePasswordAuthenticationToken(
-                                loginDto.email(),
-                                loginDto.password()
-                        )
-                );
+               this.securityService.authentication( new UsernamePasswordAuthenticationToken(
+                       loginDto.email(),
+                       loginDto.password()
+               ));
 
-        String accessToken = jwtService.generateAccessToken(authentication);
+        String accessToken = this.authenticationTokenService.generateAccessToken(authentication);
 
         UserPrincipal userPrincipal = (UserPrincipal) authentication.getPrincipal();
 
-        String refreshToken = this.refreshTokenService.createRefreshToken(userPrincipal.getUser());
+        String refreshToken = this.authenticationTokenService.createRefreshToken(userPrincipal.getUser());
 
 
         return new AuthResponse(accessToken, refreshToken,"Bearer");
@@ -105,10 +90,7 @@ public class AuthService {
     @Transactional
     public void logout(String rawRefreshToken) {
 
-        RefreshToken refreshToken =
-                refreshTokenService.validateRefreshToken(rawRefreshToken);
-
-        refreshTokenService.revokedToken(refreshToken);
+        this.authenticationTokenService.revoke(rawRefreshToken);
     }
 
 
@@ -130,7 +112,7 @@ public class AuthService {
 
 
 
-        String token = this.resetPasswordService.createResetToken(validatedOtp.getUser());
+        String token = this.authenticationTokenService.createResetPasswordToken(validatedOtp.getUser());
 
 
         return new TokenDto(token);
@@ -139,7 +121,7 @@ public class AuthService {
     @Transactional
     public User updatePassword(ResetPasswordDto resetPasswordDto){
 
-        ResetPasswordToken resetPasswordToken = this.resetPasswordService.validateToken(
+        BaseToken resetPasswordToken = this.authenticationTokenService.validate(
                 resetPasswordDto.resetPasswordToken());
 
         User user = resetPasswordToken.getUser();
@@ -148,7 +130,7 @@ public class AuthService {
 
         this.userRepository.save(user);
 
-        this.resetPasswordService.revoke(resetPasswordToken);
+        this.authenticationTokenService.revoke(resetPasswordDto.resetPasswordToken());
 
         return user;
     }
@@ -164,12 +146,12 @@ public class AuthService {
     @Transactional
     public AuthResponse refresh(String rawRefreshToken){
 
-        RefreshToken oldToken  = this.refreshTokenService.validateRefreshToken(rawRefreshToken);
+        BaseToken oldToken  = this.authenticationTokenService.validate(rawRefreshToken);
 
         User user = oldToken.getUser();
 
 
-        this.refreshTokenService.revokedToken(oldToken);
+        this.authenticationTokenService.revoke(rawRefreshToken);
 
         UserPrincipal userPrincipal = new UserPrincipal(user);
 
@@ -181,9 +163,9 @@ public class AuthService {
                 );
 
 
-        String accessToken = this.jwtService.generateAccessToken(authentication);
+        String accessToken = this.authenticationTokenService.generateAccessToken(authentication);
 
-        String refreshToken = this.refreshTokenService.createRefreshToken(user);
+        String refreshToken = this.authenticationTokenService.createRefreshToken(user);
 
 
         return new AuthResponse(accessToken, refreshToken, "Bearer");
