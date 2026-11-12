@@ -89,7 +89,6 @@ public class AuthService {
 
     @Transactional
     public void logout(String rawRefreshToken) {
-
         this.authenticationTokenService.revoke(rawRefreshToken);
     }
 

@@ -1,13 +1,17 @@
 package dev.gnad.SpringModulith.module.Auth.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import dev.gnad.SpringModulith.common.domain.BaseEntity;
 import dev.gnad.SpringModulith.module.ToDoList.domain.entity.ToDoList;
 import dev.gnad.SpringModulith.module.Auth.domain.Enum.Role;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Table(name = "users")
 @Data
@@ -29,6 +33,7 @@ public class User extends BaseEntity {
             cascade = CascadeType.REMOVE,
             orphanRemoval = true
     )
+    @JsonManagedReference
     private List<ToDoList> toDoList;
 
 

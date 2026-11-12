@@ -1,6 +1,7 @@
 package dev.gnad.SpringModulith.module.Project.service;
 
 import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
+import dev.gnad.SpringModulith.common.cache.constants.CacheName;
 import dev.gnad.SpringModulith.common.utility.filter.FilterCondition;
 import dev.gnad.SpringModulith.common.utility.filter.FilterSpecification;
 import dev.gnad.SpringModulith.module.Project.domain.dto.CreateProjectDto;
@@ -9,6 +10,10 @@ import dev.gnad.SpringModulith.module.Project.domain.dto.ProjectResponseDto;
 import dev.gnad.SpringModulith.module.Project.domain.dto.UpdateProjectDto;
 import dev.gnad.SpringModulith.module.Project.domain.entity.Project;
 import dev.gnad.SpringModulith.module.Project.internal.repository.ProjectRepository;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -19,6 +24,7 @@ import java.util.List;
 import java.util.logging.Filter;
 
 @Service
+@CacheConfig(cacheNames = CacheName.ToDoList)
 public class ProjectService {
 
     private final ProjectRepository projectRepository;
@@ -44,6 +50,7 @@ public class ProjectService {
         );
     }
 
+    @Cacheable(key = "#id")
     public Project findById(Integer id ,
                             Integer userId){
         return this.projectRepository.findByIdAndUserId(id, userId).
@@ -66,6 +73,7 @@ public class ProjectService {
                 , pageable);
     }
 
+    @CachePut(key = "#id")
     public Project updateById(UpdateProjectDto updateProjectDto,
                               Integer id,
                               Integer userId
@@ -80,6 +88,8 @@ public class ProjectService {
         return this.projectRepository.save(project);
     }
 
+
+    @CacheEvict(key = "#id")
     public void deleteById(Integer id,
                            Integer userId){
         Project project = this.projectRepository.findByIdAndUserId(id, userId).

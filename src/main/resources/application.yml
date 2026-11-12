@@ -4,6 +4,8 @@ spring:
     port: 6379
   cache:
     type: redis
+    ttl-user-data: 30
+    ttl-reference-data: 15
   datasource:
     url: jdbc:postgresql://127.0.0.1:5433/ToDo
     username: postgres

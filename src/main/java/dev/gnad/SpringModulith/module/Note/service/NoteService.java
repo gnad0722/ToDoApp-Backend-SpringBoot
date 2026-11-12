@@ -1,15 +1,21 @@
 package dev.gnad.SpringModulith.module.Note.service;
 
 import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
+import dev.gnad.SpringModulith.common.cache.constants.CacheName;
 import dev.gnad.SpringModulith.module.Note.domain.dto.NoteCreateDto;
 import dev.gnad.SpringModulith.module.Note.domain.dto.NoteResponseDto;
 import dev.gnad.SpringModulith.module.Note.domain.dto.UpdateNoteDto;
 import dev.gnad.SpringModulith.module.Note.domain.entity.Note;
 import dev.gnad.SpringModulith.module.Note.internal.repository.NoteRepository;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.authentication.AuthenticationEventPublisher;
 import org.springframework.stereotype.Service;
 
 @Service
+@CacheConfig(cacheNames = CacheName.Note)
 public class NoteService {
 
     private final NoteRepository noteRepository;
@@ -36,6 +42,7 @@ public class NoteService {
     }
 
 
+    @Cacheable(key = "#taskId")
     public Note findByTaskId(Integer taskId){
         return this.noteRepository.findByTask_id(taskId)
                 .orElseThrow(()->
@@ -43,6 +50,7 @@ public class NoteService {
                         );
     }
 
+    @CachePut(key = "#taskId")
     public Note updateByTaskId(Integer taskId, UpdateNoteDto updateNoteDto){
         Note note = this.noteRepository.findByTask_id(taskId)
                 .orElseThrow(()->
@@ -53,6 +61,7 @@ public class NoteService {
         return this.noteRepository.save(note);
     }
 
+    @CacheEvict(key = "#taskId")
     public void deleteByTaskId(Integer taskId){
         Note note = this.noteRepository.findByTask_id(taskId)
                 .orElseThrow(()->

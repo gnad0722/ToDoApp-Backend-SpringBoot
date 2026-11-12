@@ -1,6 +1,7 @@
 package dev.gnad.SpringModulith.module.Task.service;
 
 import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
+import dev.gnad.SpringModulith.common.cache.constants.CacheName;
 import dev.gnad.SpringModulith.common.utility.filter.FilterCondition;
 import dev.gnad.SpringModulith.common.utility.filter.FilterSpecification;
 import dev.gnad.SpringModulith.module.Task.domain.dto.CreateTaskDto;
@@ -13,6 +14,10 @@ import dev.gnad.SpringModulith.module.Task.policy.TaskPolicyFacade;
 import dev.gnad.SpringModulith.module.ToDoList.domain.entity.ToDoList;
 import dev.gnad.SpringModulith.module.ToDoList.service.ToDoService;
 import jakarta.transaction.Transactional;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -22,6 +27,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@CacheConfig(cacheNames = CacheName.Task)
 public class TaskService {
 
     private final TaskRepository taskRepository;
@@ -45,6 +51,7 @@ public class TaskService {
         return this.taskMappedService.toResponse(task);
     }
 
+    @Cacheable(key = "#id")
     public Task findById(Integer id){
         return this.taskRepository.findById(id).orElseThrow(
                 ()-> new NotFoundException("Not found task with id: "+id)
@@ -88,6 +95,7 @@ public class TaskService {
                 ,pageable);
     }
 
+    @CachePut(key = "#taskId")
     public Task updateById(Integer taskId, UpdateTaskDto updateTaskDto){
         Task task = this.taskRepository.findById(taskId).orElseThrow(()->
                 new NotFoundException("Cannot found the task with id: " + taskId)
@@ -97,6 +105,7 @@ public class TaskService {
     }
 
     @Transactional
+    @CachePut(key = "#taskId")
     public Task markDone(Integer taskId , Integer userId){
         Task task = this.taskRepository.findById(taskId).orElseThrow(()->
                 new NotFoundException("Cannot found the task with id: " + taskId)
@@ -122,6 +131,7 @@ public class TaskService {
     }
 
     @Transactional
+    @CacheEvict(key = "#taskId")
     public void deleteById(
             Integer taskId,
             Integer userId

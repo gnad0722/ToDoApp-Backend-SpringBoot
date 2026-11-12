@@ -1,17 +1,20 @@
 package dev.gnad.SpringModulith.module.ToDoList.domain.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import dev.gnad.SpringModulith.common.domain.BaseEntity;
 import dev.gnad.SpringModulith.module.Task.domain.entity.Task;
 import dev.gnad.SpringModulith.module.Auth.domain.entity.User;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import org.hibernate.annotations.OnDelete;
 import org.hibernate.annotations.OnDeleteAction;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Entity
 @Data
 @Inheritance(strategy = InheritanceType.JOINED)
@@ -31,6 +34,7 @@ public class ToDoList extends BaseEntity {
     @ManyToOne()
     @JoinColumn(name = "user_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
+    @JsonBackReference
     private User user;
 
     @Column(nullable = false)

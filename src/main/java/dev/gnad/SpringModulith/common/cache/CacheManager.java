@@ -32,8 +32,7 @@ public class CacheManager {
     @Bean
     public RedisCacheManager redisCacheManager(){
       RedisCacheConfiguration defaultConfiguration = RedisCacheConfiguration.defaultCacheConfig()
-                .disableCachingNullValues()
-                .entryTtl(Duration.ofMinutes(10));
+                .disableCachingNullValues();
 
         Map<String, RedisCacheConfiguration> configurations =
                 Map.of(
@@ -42,7 +41,25 @@ public class CacheManager {
                                 CacheName.USERS,
                                 this.strategyFactory.getStrategy(CacheName.USERS),
                                 defaultConfiguration
+                        ),
+                        CacheName.ToDoList,
+                        this.configurationFactory.getConfiguration(
+                                CacheName.ToDoList,
+                                this.strategyFactory.getStrategy(CacheName.ToDoList),
+                                defaultConfiguration
+                        ),
+                        CacheName.Task,
+                        this.configurationFactory.getConfiguration(
+                                CacheName.Task,
+                                this.strategyFactory.getStrategy(CacheName.Task),
+                                defaultConfiguration
+                        ), CacheName.Note,
+                        this.configurationFactory.getConfiguration(
+                                CacheName.Note,
+                                this.strategyFactory.getStrategy(CacheName.Note),
+                                defaultConfiguration
                         )
+
                 );
 
         return RedisCacheManager

@@ -1,6 +1,7 @@
 package dev.gnad.SpringModulith.module.ToDoList.service;
 
 import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
+import dev.gnad.SpringModulith.common.cache.constants.CacheName;
 import dev.gnad.SpringModulith.common.utility.filter.FilterCondition;
 import dev.gnad.SpringModulith.common.utility.filter.FilterSpecification;
 import dev.gnad.SpringModulith.module.Task.domain.entity.Task;
@@ -11,6 +12,10 @@ import dev.gnad.SpringModulith.module.ToDoList.domain.dto.UpdateToDoDto;
 import dev.gnad.SpringModulith.module.ToDoList.domain.entity.ToDoList;
 import dev.gnad.SpringModulith.module.ToDoList.internal.repository.ToDoRepository;
 import jakarta.persistence.criteria.CriteriaBuilder;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -20,6 +25,7 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
+@CacheConfig(cacheNames = CacheName.ToDoList)
 public class ToDoService {
 
     private final ToDoRepository toDoRepository;
@@ -38,6 +44,8 @@ public class ToDoService {
         return this.toDoMappedService.toResponse(toDoList);
     }
 
+
+    @Cacheable(key = "#id")
     public ToDoList getToDoById(Integer id, Integer userId){
         return this.toDoRepository.findByIdAndUserId(
                 id,
@@ -47,11 +55,14 @@ public class ToDoService {
                 );
     }
 
-    public ToDoList createToDo(CreateToDoDto createToDoDto, Integer userId){
-       return this.toDoRepository.save(
+
+    public ToDoList createToDo(CreateToDoDto createToDoDto,
+                               Integer userId){
+        return this.toDoRepository.save(
                this.toDoMappedService.toObject(createToDoDto,userId));
     }
 
+    @CachePut(key = "#toDoId")
     public ToDoList updateToDoById(
             UpdateToDoDto updateToDoDto,
             Integer toDoId,
@@ -69,6 +80,8 @@ public class ToDoService {
         return this.toDoRepository.save(toDoList);
     }
 
+
+    @CacheEvict(key = "#toDoId")
     public void deleteToDoById(
             Integer toDoId,
             Integer userId){
@@ -80,6 +93,8 @@ public class ToDoService {
         );
         this.toDoRepository.deleteById(toDoList.getId());
     }
+
+
 
     public Page<ToDoList> findByUserId(
             Integer userId,
@@ -99,6 +114,8 @@ public class ToDoService {
                 , pageable);
     }
 
+
+    @CachePut(key = "#toDoId")
     public void changeTaskCount(Integer toDoId, Integer taskCount){
         ToDoList toDoList = this.toDoRepository.findById(toDoId).
                 orElseThrow(()->
@@ -109,6 +126,7 @@ public class ToDoService {
 
     }
 
+    @CachePut(key = "#toDoId")
     public void changeTaskCompleteCount(Integer toDoId, Integer taskCount){
         ToDoList toDoList = this.toDoRepository.findById(toDoId).
                 orElseThrow(()->
