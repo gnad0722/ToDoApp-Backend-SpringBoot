@@ -89,7 +89,7 @@ public class AuthService {
 
     @Transactional
     public void logout(String rawRefreshToken) {
-        this.authenticationTokenService.revoke(rawRefreshToken);
+        this.authenticationTokenService.revokeRefreshToken(rawRefreshToken);
     }
 
 
@@ -120,16 +120,16 @@ public class AuthService {
     @Transactional
     public User updatePassword(ResetPasswordDto resetPasswordDto){
 
-        BaseToken resetPasswordToken = this.authenticationTokenService.validate(
+        BaseToken resetPasswordToken = this.authenticationTokenService.validateResetToken(
                 resetPasswordDto.resetPasswordToken());
 
         User user = resetPasswordToken.getUser();
 
-        user.setPassword(resetPasswordDto.newPassword());
+        String newPasswordHashed = this.securityService.hashPassword(resetPasswordDto.newPassword());
+        user.setPassword(newPasswordHashed);
 
         this.userRepository.save(user);
-
-        this.authenticationTokenService.revoke(resetPasswordDto.resetPasswordToken());
+        this.authenticationTokenService.revokeResetToken(resetPasswordDto.resetPasswordToken());
 
         return user;
     }
@@ -145,12 +145,12 @@ public class AuthService {
     @Transactional
     public AuthResponse refresh(String rawRefreshToken){
 
-        BaseToken oldToken  = this.authenticationTokenService.validate(rawRefreshToken);
+        BaseToken oldToken  = this.authenticationTokenService.validateRefreshToken(rawRefreshToken);
 
         User user = oldToken.getUser();
 
 
-        this.authenticationTokenService.revoke(rawRefreshToken);
+        this.authenticationTokenService.revokeRefreshToken(rawRefreshToken);
 
         UserPrincipal userPrincipal = new UserPrincipal(user);
 

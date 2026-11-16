@@ -60,7 +60,8 @@ public class EmailSenderService {
 
             javaMailSender.send(message);
         } catch (Exception e) {
-            throw new RuntimeException("Failed to send OTP email");
+            System.out.printf("Failed to send OTP email to {}", recipientEmail, e);
+            throw new RuntimeException("Failed to send OTP email", e);
         }
     }
 }

@@ -11,7 +11,6 @@ public class TokenCommon {
 
 
 
-
     public static String hashToken(String token) {
         try {
             MessageDigest digest =

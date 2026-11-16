@@ -59,6 +59,19 @@ public class CacheManager {
                                 this.strategyFactory.getStrategy(CacheName.Note),
                                 defaultConfiguration
                         )
+                        ,CacheName.RefreshToken,
+                        this.configurationFactory.getConfiguration(
+                                CacheName.RefreshToken,
+                                this.strategyFactory.getStrategy(CacheName.RefreshToken),
+                                defaultConfiguration
+                        ),
+                        CacheName.ResetToken,
+                        this.configurationFactory.getConfiguration(
+                                CacheName.ResetToken,
+                                this.strategyFactory.getStrategy(CacheName.ResetToken),
+                                defaultConfiguration
+                        )
+
 
                 );
 

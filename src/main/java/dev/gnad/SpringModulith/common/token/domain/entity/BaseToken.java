@@ -17,6 +17,9 @@ public class BaseToken {
     @Column(name = "token_hash", nullable = false, unique = true)
     private String tokenHash;
 
+    @Column(name = "token_raw", nullable = false, unique = true)
+    private String tokenRaw;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(
             name = "user_id",

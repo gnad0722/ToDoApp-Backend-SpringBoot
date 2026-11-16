@@ -6,8 +6,10 @@ import org.springframework.security.core.Authentication;
 
 public interface AuthenticationTokenService {
     String generateAccessToken(Authentication authentication);
-    void revoke(String rawToken);
-    BaseToken validate(String rawToken);
+    void revokeRefreshToken(String rawToken);
+    void revokeResetToken(String rawToken);
+    BaseToken validateRefreshToken(String rawToken);
+    BaseToken validateResetToken(String rawToken);
     String createRefreshToken(User user);
     String createResetPasswordToken(User user);
 }

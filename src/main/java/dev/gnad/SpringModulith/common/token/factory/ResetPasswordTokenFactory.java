@@ -42,7 +42,7 @@ public class ResetPasswordTokenFactory implements TokenFactory{
 
         ResetPasswordToken resetPasswordToken = new ResetPasswordToken();
 
-
+        resetPasswordToken.setTokenRaw(rawToken);
         resetPasswordToken.setTokenHash(TokenCommon.hashToken(rawToken));
         resetPasswordToken.setUser(user);
         resetPasswordToken.setExpireAt(

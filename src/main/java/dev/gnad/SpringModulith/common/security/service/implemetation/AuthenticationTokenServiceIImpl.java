@@ -4,7 +4,8 @@ import dev.gnad.SpringModulith.common.security.service.facade.AuthenticationToke
 import dev.gnad.SpringModulith.common.token.domain.entity.BaseToken;
 import dev.gnad.SpringModulith.common.token.factory.RefreshTokenFactory;
 import dev.gnad.SpringModulith.common.token.factory.ResetPasswordTokenFactory;
-import dev.gnad.SpringModulith.common.token.service.TokenService;
+import dev.gnad.SpringModulith.common.token.service.RefreshTokenService;
+import dev.gnad.SpringModulith.common.token.service.ResetPasswordTokenService;
 import dev.gnad.SpringModulith.module.Auth.domain.entity.User;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
@@ -14,18 +15,22 @@ public class AuthenticationTokenServiceIImpl implements AuthenticationTokenServi
 
     private final AccessTokenService accessTokenService;
 
-    private final TokenService tokenService;
+    private final RefreshTokenService refreshTokenService;
+
+    private final ResetPasswordTokenService resetPasswordTokenService;
 
     private final ResetPasswordTokenFactory resetPasswordTokenFactory;
 
     private final RefreshTokenFactory refreshTokenFactory;
 
     public AuthenticationTokenServiceIImpl(AccessTokenService accessTokenService,
-                                           TokenService tokenService,
+                                           RefreshTokenService refreshTokenService,
+                                           ResetPasswordTokenService resetPasswordTokenService,
                                            ResetPasswordTokenFactory resetPasswordTokenFactory,
                                            RefreshTokenFactory refreshTokenFactory) {
         this.accessTokenService = accessTokenService;
-        this.tokenService = tokenService;
+        this.refreshTokenService = refreshTokenService;
+        this.resetPasswordTokenService = resetPasswordTokenService;
         this.resetPasswordTokenFactory = resetPasswordTokenFactory;
         this.refreshTokenFactory = refreshTokenFactory;
     }
@@ -37,24 +42,34 @@ public class AuthenticationTokenServiceIImpl implements AuthenticationTokenServi
     }
 
     @Override
-    public void revoke(String rawToken) {
-        this.tokenService.revoke(rawToken);
+    public void revokeRefreshToken(String rawToken) {
+        this.refreshTokenService.revoke(rawToken);
     }
 
     @Override
-    public BaseToken validate(String rawToken) {
-        return this.tokenService.validateToken(rawToken);
+    public void revokeResetToken(String rawToken) {
+        this.resetPasswordTokenService.revoke(rawToken);
+    }
+
+    @Override
+    public BaseToken validateRefreshToken(String rawToken) {
+        return this.refreshTokenService.validateToken(rawToken);
+    }
+
+    @Override
+    public BaseToken validateResetToken(String rawToken) {
+        return this.resetPasswordTokenService.validateToken(rawToken);
     }
 
     @Override
     public String createRefreshToken(User user) {
-        BaseToken token = this.tokenService.createToken(user, refreshTokenFactory);
-        return token.getTokenHash();
+        BaseToken token = this.refreshTokenService.createToken(user, refreshTokenFactory);
+        return token.getTokenRaw();
     }
 
     @Override
     public String createResetPasswordToken(User user) {
-        BaseToken token = this.tokenService.createToken(user, resetPasswordTokenFactory);
-        return token.getTokenHash();
+        BaseToken token = this.resetPasswordTokenService.createToken(user, resetPasswordTokenFactory);
+        return token.getTokenRaw();
     }
 }
