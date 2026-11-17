@@ -2,6 +2,8 @@ package dev.gnad.SpringModulith.module.ToDoList.service;
 
 import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
 import dev.gnad.SpringModulith.common.cache.constants.CacheName;
+import dev.gnad.SpringModulith.common.schedule.domain.entity.Schedule;
+import dev.gnad.SpringModulith.common.schedule.service.ScheduleService;
 import dev.gnad.SpringModulith.common.utility.filter.FilterCondition;
 import dev.gnad.SpringModulith.common.utility.filter.FilterSpecification;
 import dev.gnad.SpringModulith.module.Task.domain.entity.Task;
@@ -31,13 +33,16 @@ public class ToDoService {
     private final ToDoRepository toDoRepository;
     private final ApplicationEventPublisher publisher;
     private final ToDoMappedService toDoMappedService;
+    private final ScheduleService scheduleService;
 
     public ToDoService(ToDoRepository toDoRepository,
                        ApplicationEventPublisher publisher,
-                       ToDoMappedService toDoMappedService){
+                       ToDoMappedService toDoMappedService,
+                       ScheduleService scheduleService){
         this.publisher = publisher;
         this.toDoRepository = toDoRepository;
         this.toDoMappedService = toDoMappedService;
+        this.scheduleService = scheduleService;
     }
 
     public ToDoResponseDto mapToResponse(ToDoList toDoList) {
@@ -58,8 +63,11 @@ public class ToDoService {
 
     public ToDoList createToDo(CreateToDoDto createToDoDto,
                                Integer userId){
-        return this.toDoRepository.save(
+
+        ToDoList toDoList = this.toDoRepository.save(
                this.toDoMappedService.toObject(createToDoDto,userId));
+        this.scheduleService.createSchedule(toDoList);
+        return toDoList;
     }
 
     @CachePut(key = "#toDoId")
@@ -76,7 +84,9 @@ public class ToDoService {
                 );
 
         this.toDoMappedService.patch(toDoList, updateToDoDto);
-
+        if (updateToDoDto.startTime() != null ){
+            this.scheduleService.updateRemindTime(toDoList);
+        }
         return this.toDoRepository.save(toDoList);
     }
 
@@ -91,6 +101,7 @@ public class ToDoService {
         ).orElseThrow(()->
                 new NotFoundException("Not Found To Do with Id: "+ toDoId)
         );
+        this.scheduleService.cancelSchedule(toDoList);
         this.toDoRepository.deleteById(toDoList.getId());
     }
 

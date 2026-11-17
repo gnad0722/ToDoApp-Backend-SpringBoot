@@ -2,6 +2,7 @@ package dev.gnad.SpringModulith.module.Auth.service;
 
 import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
 import dev.gnad.SpringModulith.common.email.EmailSenderService;
+import dev.gnad.SpringModulith.common.email.utility.EmailGenerator;
 import dev.gnad.SpringModulith.common.otp.domain.entity.Otp;
 import dev.gnad.SpringModulith.common.otp.service.OtpService;
 import dev.gnad.SpringModulith.common.security.service.facade.AuthenticationTokenService;
@@ -103,7 +104,11 @@ public class AuthService {
 
         String otp = this.otpService.createOtp(user);
 
-        this.emailSenderService.sendOtp(user.getEmail(), otp);
+        this.emailSenderService.sendEmail(
+                user.getEmail(),
+                EmailGenerator.generateOtpEmail(otp),
+                "Password Reset OTP"
+        );
     }
 
     public TokenDto validatOtp(VerifyOtpDto verifyOtpDto){

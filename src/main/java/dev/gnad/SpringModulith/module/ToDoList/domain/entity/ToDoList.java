@@ -31,7 +31,7 @@ public class ToDoList extends BaseEntity {
     private List<Task> taskList ;
 
 
-    @ManyToOne()
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @OnDelete(action = OnDeleteAction.CASCADE)
     @JsonBackReference
