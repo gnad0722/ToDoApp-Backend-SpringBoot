@@ -29,9 +29,7 @@ public class NoteController {
     public ResponseEntity<ApiResponse<NoteResponseDto>> getByTaskId(
             @PathVariable("taskId") Integer taskId
     ){
-        NoteResponseDto response = this.noteService.toResponse(
-                this.noteService.findByTaskId(taskId)
-        );
+        NoteResponseDto response = this.noteService.findByTaskId(taskId);
 
         return ResponseEntity.ok(
                 ApiResponse.success(
@@ -45,9 +43,7 @@ public class NoteController {
     public  ResponseEntity<ApiResponse<NoteResponseDto>> createNote(
             @RequestBody() @Valid NoteCreateDto createDto
     ){
-        NoteResponseDto response = this.noteService.toResponse(
-                this.noteService.create(createDto)
-        );
+        NoteResponseDto response = this.noteService.create(createDto);
 
         return ResponseEntity.ok(
                 ApiResponse.success(
@@ -62,9 +58,7 @@ public class NoteController {
             @PathVariable("taskId") Integer taskId,
             @RequestBody() @Valid UpdateNoteDto updateNoteDto
     ){
-        NoteResponseDto response = this.noteService.toResponse(
-                this.noteService.updateByTaskId(taskId,updateNoteDto)
-        );
+        NoteResponseDto response = this.noteService.updateByTaskId(taskId,updateNoteDto);
 
         return ResponseEntity.ok(
                 ApiResponse.success(

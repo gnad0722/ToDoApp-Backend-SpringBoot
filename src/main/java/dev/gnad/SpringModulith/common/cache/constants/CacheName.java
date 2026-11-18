@@ -7,6 +7,8 @@ public final class CacheName {
 
     public static final String ToDoList = "toDoList";
 
+    public static final String Project = "project";
+
     public static final String Task= "task";
 
     public static final String Note = "note";

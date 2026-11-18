@@ -1,5 +1,6 @@
 package dev.gnad.SpringModulith.module.ToDoList.domain.dto;
 
+import dev.gnad.SpringModulith.module.Task.domain.dto.TaskDto;
 import dev.gnad.SpringModulith.module.Task.domain.entity.Task;
 
 import java.time.LocalDateTime;
@@ -12,7 +13,6 @@ public record ToDoResponseDto(
     Integer numTask,
     Integer numCompleteTask,
     LocalDateTime createdAt,
-    LocalDateTime lastModifiedAt,
-    List<Task> taskList
+    LocalDateTime lastModifiedAt
 ) {
 }

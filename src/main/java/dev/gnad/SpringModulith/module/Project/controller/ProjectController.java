@@ -8,7 +8,6 @@ import dev.gnad.SpringModulith.common.utility.filter.FilterSpecification;
 import dev.gnad.SpringModulith.module.Project.domain.dto.CreateProjectDto;
 import dev.gnad.SpringModulith.module.Project.domain.dto.ProjectResponseDto;
 import dev.gnad.SpringModulith.module.Project.domain.dto.UpdateProjectDto;
-import dev.gnad.SpringModulith.module.Project.domain.entity.Project;
 import dev.gnad.SpringModulith.module.Project.service.ProjectService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -22,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Iterator;
 import java.util.List;
+import java.util.function.Function;
 
 
 @RestController()
@@ -46,7 +46,7 @@ public class ProjectController {
     ){
         List<FilterCondition> conditions = FilterSpecification.parseFilters(filter);
 
-        Page<Project> projects = this.projectService.findByUserId(
+        Page<ProjectResponseDto> projects = this.projectService.findByUserId(
                 CurrentUserProvider.getUserId(jwt),
                 pageable,
                 conditions
@@ -54,7 +54,7 @@ public class ProjectController {
 
         PageResponse<ProjectResponseDto> response = PageResponse.from(
                 projects,
-                this.projectService::toResponse
+                Function.identity()
         );
 
         return ResponseEntity.ok(
@@ -70,9 +70,7 @@ public class ProjectController {
             @AuthenticationPrincipal Jwt jwt,
             @PathVariable("id") Integer id
     ){
-        ProjectResponseDto response = this.projectService.toResponse(
-                this.projectService.findById(id, CurrentUserProvider.getUserId(jwt))
-        );
+        ProjectResponseDto response = this.projectService.findById(id, CurrentUserProvider.getUserId(jwt));
         return ResponseEntity.ok(
                 ApiResponse.success(
                         response,
@@ -82,13 +80,11 @@ public class ProjectController {
     }
 
     @PostMapping("/")
-    public ResponseEntity<ApiResponse<ProjectResponseDto>> creatProject(
+    public ResponseEntity<ApiResponse<ProjectResponseDto>> createProject(
             @AuthenticationPrincipal Jwt jwt,
             @RequestBody() @Valid CreateProjectDto createProjectDto
             ){
-        ProjectResponseDto response = this.projectService.toResponse(
-                this.projectService.create(createProjectDto, CurrentUserProvider.getUserId(jwt))
-        );
+        ProjectResponseDto response = this.projectService.create(createProjectDto, CurrentUserProvider.getUserId(jwt));
         return ResponseEntity.ok(
                 ApiResponse.success(
                         response,
@@ -104,12 +100,10 @@ public class ProjectController {
             @PathVariable("id") Integer id,
             @RequestBody UpdateProjectDto updateProjectDto
             ){
-        ProjectResponseDto response = this.projectService.toResponse(
-                this.projectService.updateById(
+        ProjectResponseDto response = this.projectService.updateById(
                         updateProjectDto,
                         id,
-                        CurrentUserProvider.getUserId(jwt))
-        );
+                        CurrentUserProvider.getUserId(jwt));
         return ResponseEntity.ok(
                 ApiResponse.success(
                         response,

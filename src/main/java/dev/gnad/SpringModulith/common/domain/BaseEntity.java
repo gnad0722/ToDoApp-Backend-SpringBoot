@@ -46,4 +46,6 @@ public class BaseEntity {
     public void setLastModifiedAt(LocalDateTime lastModifiedAt) {
         this.lastModifiedAt = lastModifiedAt;
     }
+
+
 }

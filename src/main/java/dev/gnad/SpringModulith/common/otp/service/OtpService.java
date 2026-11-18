@@ -1,6 +1,6 @@
 package dev.gnad.SpringModulith.common.otp.service;
 
-import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
+import dev.gnad.SpringModulith.common.api.exception.BadRequestException;
 import dev.gnad.SpringModulith.common.otp.domain.entity.Otp;
 import dev.gnad.SpringModulith.common.otp.internal.respository.OtpRepository;
 import dev.gnad.SpringModulith.module.Auth.domain.entity.User;
@@ -16,6 +16,8 @@ import java.util.HexFormat;
 
 @Service
 public class OtpService {
+
+    private static final String INVALID_OTP = "Invalid or expired verification code";
 
     private final OtpRepository otpRepository;
 
@@ -68,15 +70,15 @@ public class OtpService {
 
         Otp otp = this.otpRepository.findByOtpHashAndUser_email(hashOtp, email)
                 .orElseThrow(
-                        ()-> new NotFoundException("Invalid OTP")
+                        ()-> new BadRequestException(INVALID_OTP)
                 );
 
         if (otp.isExpired()){
-            throw new RuntimeException("Invalid OTP");
+            throw new BadRequestException(INVALID_OTP);
         }
 
         if (otp.isVerified()){
-            throw new RuntimeException("Invalid OTP");
+            throw new BadRequestException(INVALID_OTP);
         }
         return otp;
     }

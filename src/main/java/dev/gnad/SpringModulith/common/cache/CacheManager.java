@@ -48,6 +48,12 @@ public class CacheManager {
                                 this.strategyFactory.getStrategy(CacheName.ToDoList),
                                 defaultConfiguration
                         ),
+                        CacheName.Project,
+                        this.configurationFactory.getConfiguration(
+                                CacheName.Project,
+                                this.strategyFactory.getStrategy(CacheName.Project),
+                                defaultConfiguration
+                        ),
                         CacheName.Task,
                         this.configurationFactory.getConfiguration(
                                 CacheName.Task,

@@ -1,5 +1,7 @@
 package dev.gnad.SpringModulith.common.config;
 
+import dev.gnad.SpringModulith.common.security.handler.RestAccessDeniedHandler;
+import dev.gnad.SpringModulith.common.security.handler.RestAuthenticationEntryPoint;
 import dev.gnad.SpringModulith.module.Auth.service.CustomerUserDetailService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -44,9 +46,16 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(
             HttpSecurity httpSecurity,
             AuthenticationProvider authenticationProvider,
-            JwtAuthenticationConverter jwtAuthenticationConverter) throws  Exception{
+            JwtAuthenticationConverter jwtAuthenticationConverter,
+            RestAuthenticationEntryPoint authenticationEntryPoint,
+            RestAccessDeniedHandler accessDeniedHandler) throws  Exception{
             httpSecurity
                     .csrf(csrf->csrf.disable())
+                    // Errors raised in the filter chain must use the same envelope as the controllers.
+                    .exceptionHandling(exception -> exception
+                            .authenticationEntryPoint(authenticationEntryPoint)
+                            .accessDeniedHandler(accessDeniedHandler)
+                    )
                     .sessionManagement(
                             session -> session.sessionCreationPolicy(
                                     SessionCreationPolicy.STATELESS
@@ -70,6 +79,9 @@ public class SecurityConfig {
                             .anyRequest().authenticated()
                     )
                     .oauth2ResourceServer(oauth2 -> oauth2
+                            // Invalid / expired JWT -> 401 (not 403, not 500)
+                            .authenticationEntryPoint(authenticationEntryPoint)
+                            .accessDeniedHandler(accessDeniedHandler)
                             .jwt(jwt -> jwt
                                     .jwtAuthenticationConverter(
                                             jwtAuthenticationConverter

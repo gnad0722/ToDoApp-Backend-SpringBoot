@@ -1,6 +1,6 @@
 package dev.gnad.SpringModulith.common.token.service;
 
-import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
+import dev.gnad.SpringModulith.common.api.exception.UnauthorizedException;
 import dev.gnad.SpringModulith.common.cache.constants.CacheName;
 import dev.gnad.SpringModulith.common.token.domain.entity.BaseToken;
 import dev.gnad.SpringModulith.common.token.domain.entity.RefreshToken;
@@ -20,6 +20,8 @@ import java.time.Instant;
 @Service
 @CacheConfig(cacheNames = CacheName.RefreshToken)
 public class RefreshTokenService implements TokenService {
+
+    private static final String INVALID_REFRESH_TOKEN = "Session expired, please log in again";
 
     private final RefreshTokenRepository refreshTokenRepository;
 
@@ -48,7 +50,7 @@ public class RefreshTokenService implements TokenService {
 
         return this.refreshTokenRepository
                 .findByTokenHash(hashToken).orElseThrow(
-                        ()->new NotFoundException("Invalid Refresh Token")
+                        ()->new UnauthorizedException(INVALID_REFRESH_TOKEN)
                 );
     }
 
@@ -58,11 +60,11 @@ public class RefreshTokenService implements TokenService {
 
        BaseToken token = this.getToken(rawToken);
         if (token.isExpired()){
-            throw new RuntimeException("Refresh Token is invalid");
+            throw new UnauthorizedException(INVALID_REFRESH_TOKEN);
         }
 
         if (token.isRevoked()){
-            throw new RuntimeException("Refresh Token is invalid");
+            throw new UnauthorizedException(INVALID_REFRESH_TOKEN);
         }
         return token;
     }

@@ -9,5 +9,6 @@ import java.util.Optional;
 @Repository
 public interface NoteRepository extends BaseRepository<Note> {
     Optional<Note> findByTask_id(Integer taskId);
+    boolean existsByTask_id(Integer taskId);
     void deleteByTask_id(Integer taskId);
 }

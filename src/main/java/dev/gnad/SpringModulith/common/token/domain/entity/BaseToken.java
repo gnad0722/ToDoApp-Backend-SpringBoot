@@ -8,7 +8,6 @@ import java.time.Instant;
 
 
 @MappedSuperclass
-@Data
 public class BaseToken {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
@@ -41,5 +40,61 @@ public class BaseToken {
     }
     public boolean isRevoked(){
         return revokedAt != null;
+    }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
+
+    public String getTokenRaw() {
+        return tokenRaw;
+    }
+
+    public void setTokenRaw(String tokenRaw) {
+        this.tokenRaw = tokenRaw;
+    }
+
+    public String getTokenHash() {
+        return tokenHash;
+    }
+
+    public void setTokenHash(String tokenHash) {
+        this.tokenHash = tokenHash;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Instant getRevokedAt() {
+        return revokedAt;
+    }
+
+    public void setRevokedAt(Instant revokedAt) {
+        this.revokedAt = revokedAt;
+    }
+
+    public Instant getExpireAt() {
+        return expireAt;
+    }
+
+    public void setExpireAt(Instant expireAt) {
+        this.expireAt = expireAt;
+    }
+
+    public Instant getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(Instant createdAt) {
+        this.createdAt = createdAt;
     }
 }

@@ -1,11 +1,14 @@
 package dev.gnad.SpringModulith.common.utility.filter;
 
+import dev.gnad.SpringModulith.common.api.exception.BadRequestException;
 import jakarta.persistence.criteria.CriteriaBuilder;
 import jakarta.persistence.criteria.Expression;
 import jakarta.persistence.criteria.Path;
 import jakarta.persistence.criteria.Predicate;
+import jakarta.persistence.criteria.Root;
 import org.springframework.data.jpa.domain.Specification;
 
+import java.time.DateTimeException;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Locale;
@@ -27,16 +30,19 @@ public final class FilterSpecification {
                     String[] parts = raw.split(":", 3);
 
                     if (parts.length != 3) {
-                        throw new IllegalArgumentException(
-                                "Expected filter format: field:operator:value");
+                        throw invalidFilter(raw);
                     }
 
-                    return new FilterCondition(
-                            parts[0],
-                            FilterOperator.valueOf(
-                                    parts[1].toUpperCase(Locale.ROOT)),
-                            parts[2]
-                    );
+                    try {
+                        return new FilterCondition(
+                                parts[0],
+                                FilterOperator.valueOf(
+                                        parts[1].toUpperCase(Locale.ROOT)),
+                                parts[2]
+                        );
+                    } catch (IllegalArgumentException ex) {
+                        throw invalidFilter(raw);
+                    }
                 })
                 .toList();
     }
@@ -68,16 +74,13 @@ public final class FilterSpecification {
 
         if (filter.field() == null
                 || !allowedFields.contains(filter.field())) {
-            throw new IllegalArgumentException(
-                    "Filtering by this field is not allowed: "
-                            + filter.field()
+            throw new BadRequestException(
+                    "Invalid filter: " + filter.field()
             );
         }
 
         if (filter.operator() == null) {
-            throw new IllegalArgumentException(
-                    "Filter operator is required"
-            );
+            throw invalidFilter(filter);
         }
     }
 
@@ -92,8 +95,35 @@ public final class FilterSpecification {
     private static <T> Specification<T> createSpecification(
             FilterCondition filter) {
 
-        System.out.println("Creating specification for: " + filter);
         return (root, query, cb) -> {
+            try {
+                return toPredicate(filter, root, cb);
+            } catch (IllegalArgumentException | DateTimeException ex) {
+                // Bad value for the field type (number, boolean, date-time, enum, ...)
+                throw invalidFilter(filter);
+            }
+        };
+    }
+
+    private static BadRequestException invalidFilter(String raw) {
+        return new BadRequestException("Invalid filter: " + raw);
+    }
+
+    private static BadRequestException invalidFilter(FilterCondition filter) {
+        String operator = filter.operator() == null
+                ? ""
+                : filter.operator().name().toLowerCase(Locale.ROOT);
+        return invalidFilter(
+                filter.field() + ":" + operator + ":"
+                        + (filter.value() == null ? "" : filter.value())
+        );
+    }
+
+    private static <T> Predicate toPredicate(
+            FilterCondition filter,
+            Root<T> root,
+            CriteriaBuilder cb) {
+
             Path<?> path = root.get(filter.field());
             FilterOperator operator = filter.operator();
             String value = filter.value();
@@ -135,7 +165,6 @@ public final class FilterSpecification {
 
                 case LTE -> compare(path, value, operator, cb);
             };
-        };
     }
 
     private static Object convert(String value, Class<?> type) {

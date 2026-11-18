@@ -16,7 +16,6 @@ import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Data
 @Inheritance(strategy = InheritanceType.JOINED)
 public class ToDoList extends BaseEntity {
 
@@ -45,4 +44,52 @@ public class ToDoList extends BaseEntity {
 
     @Column(nullable = false)
     private LocalDateTime startTime = LocalDateTime.now();
+
+    public String getTopic() {
+        return topic;
+    }
+
+    public void setTopic(String topic) {
+        this.topic = topic;
+    }
+
+    public List<Task> getTaskList() {
+        return taskList;
+    }
+
+    public void setTaskList(List<Task> taskList) {
+        this.taskList = taskList;
+    }
+
+    public User getUser() {
+        return user;
+    }
+
+    public void setUser(User user) {
+        this.user = user;
+    }
+
+    public Integer getNumTask() {
+        return numTask;
+    }
+
+    public void setNumTask(Integer numTask) {
+        this.numTask = numTask;
+    }
+
+    public Integer getNumCompleteTask() {
+        return numCompleteTask;
+    }
+
+    public void setNumCompleteTask(Integer numCompleteTask) {
+        this.numCompleteTask = numCompleteTask;
+    }
+
+    public LocalDateTime getStartTime() {
+        return startTime;
+    }
+
+    public void setStartTime(LocalDateTime startTime) {
+        this.startTime = startTime;
+    }
 }

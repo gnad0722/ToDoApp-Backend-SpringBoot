@@ -12,5 +12,5 @@ import java.util.Optional;
 
 @Repository
 public interface ProjectRepository extends BaseRepository<Project> {
-    Optional<Project> findByIdAndUserId(Integer id, Integer userId);
+    Optional<Project> findByIdAndUser_Id(Integer id, Integer userId);
 }

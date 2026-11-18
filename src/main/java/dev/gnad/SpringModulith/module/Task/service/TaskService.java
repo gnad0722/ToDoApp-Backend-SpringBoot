@@ -16,7 +16,6 @@ import dev.gnad.SpringModulith.module.ToDoList.service.ToDoService;
 import jakarta.transaction.Transactional;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -47,25 +46,25 @@ public class TaskService {
         this.taskPolicyFacade = taskPolicyFacade;
     }
 
-    public TaskDto mapToResponse(Task task){
-        return this.taskMappedService.toResponse(task);
+    /**
+     * Returns the managed entity (not cached). Use this from other modules
+     * when an entity is needed to build a relation, e.g. Note -> Task.
+     */
+    public Task getReference(Integer id){
+        return this.taskRepository.findById(id).orElseThrow(
+                ()-> new NotFoundException("Task not found")
+        );
     }
 
     @Cacheable(key = "#id")
-    public Task findById(Integer id){
-        return this.taskRepository.findById(id).orElseThrow(
-                ()-> new NotFoundException("Not found task with id: "+id)
-        );
+    public TaskDto findById(Integer id){
+        return this.taskMappedService.toResponse(this.getReference(id));
     }
 
     @Transactional
-    public Task create(CreateTaskDto taskDto, Integer userId){
+    public TaskDto create(CreateTaskDto taskDto, Integer userId){
 
-        ToDoList toDoList = this.toDoService.getToDoById(
-                taskDto.toDoListId(),
-                userId
-        );
-
+        ToDoList toDoList = this.toDoService.getReference(taskDto.toDoListId());
 
         Task newTask = this.taskRepository.save(
                 this.taskMappedService.toObject(
@@ -78,12 +77,12 @@ public class TaskService {
                 toDoList.getNumTask()+1
         );
 
-        return newTask;
+        return this.taskMappedService.toResponse(newTask);
     }
 
-    public Page<Task> findByToDoId(Integer toDoId,
-                                   Pageable pageable,
-                                   List<FilterCondition> conditionList){
+    public Page<TaskDto> findByToDoId(Integer toDoId,
+                                      Pageable pageable,
+                                      List<FilterCondition> conditionList){
         Specification<Task> specification = FilterSpecification.build(
                 conditionList,
                 TaskFilterField.TASK_FILTER_FIELDS
@@ -92,41 +91,40 @@ public class TaskService {
         return this.taskRepository.findAll( specification.and(
                 FilterSpecification.belongsTo(toDoId,"toDoList")
         )
-                ,pageable);
+                ,pageable)
+                .map(this.taskMappedService::toResponse);
     }
 
-    @CachePut(key = "#taskId")
-    public Task updateById(Integer taskId, UpdateTaskDto updateTaskDto){
+    @CacheEvict(key = "#taskId")
+    public TaskDto updateById(Integer taskId, UpdateTaskDto updateTaskDto){
         Task task = this.taskRepository.findById(taskId).orElseThrow(()->
-                new NotFoundException("Cannot found the task with id: " + taskId)
+                new NotFoundException("Task not found")
                 );
         taskMappedService.patch(task, updateTaskDto);
-        return this.taskRepository.save(task);
+        return this.taskMappedService.toResponse(
+                this.taskRepository.save(task)
+        );
     }
 
     @Transactional
-    @CachePut(key = "#taskId")
-    public Task markDone(Integer taskId , Integer userId){
+    @CacheEvict(key = "#taskId")
+    public TaskDto markDone(Integer taskId , Integer userId){
         Task task = this.taskRepository.findById(taskId).orElseThrow(()->
-                new NotFoundException("Cannot found the task with id: " + taskId)
+                new NotFoundException("Task not found")
         );
 
         this.taskPolicyFacade.validateCanComplete(task);
 
-        Integer toDoListId = task.getToDoList().getId();
+        ToDoList toDoList = task.getToDoList();
 
-        ToDoList toDoList = this.toDoService.getToDoById(
-                toDoListId,
-                userId
-        );
 
         task.setDone(true);
 
         this.toDoService.changeTaskCompleteCount(
-                toDoListId,
+                toDoList.getId(),
                 toDoList.getNumCompleteTask() +1);
 
-        return task;
+        return this.taskMappedService.toResponse(task);
 
     }
 
@@ -137,15 +135,10 @@ public class TaskService {
             Integer userId
     ){
         Task task = this.taskRepository.findById(taskId).orElseThrow(()->
-                new NotFoundException("Cannot found the task with id: " + taskId)
+                new NotFoundException("Task not found")
         );
 
-        Integer toDoListId = task.getToDoList().getId();
-
-        ToDoList toDoList = this.toDoService.getToDoById(
-                toDoListId,
-                userId
-        );
+        ToDoList toDoList = task.getToDoList();
 
         taskRepository.deleteById(taskId);
 

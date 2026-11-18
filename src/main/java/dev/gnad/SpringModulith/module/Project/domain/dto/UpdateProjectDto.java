@@ -4,7 +4,7 @@ import java.time.LocalDateTime;
 
 public record UpdateProjectDto(
         String topic,
-        String desription,
+        String description,
         LocalDateTime startTime,
         LocalDateTime expectEnd
 ) {

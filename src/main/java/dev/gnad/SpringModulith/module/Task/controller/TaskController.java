@@ -8,7 +8,6 @@ import dev.gnad.SpringModulith.common.utility.filter.FilterSpecification;
 import dev.gnad.SpringModulith.module.Task.domain.dto.CreateTaskDto;
 import dev.gnad.SpringModulith.module.Task.domain.dto.UpdateTaskDto;
 import dev.gnad.SpringModulith.module.Task.domain.dto.TaskDto;
-import dev.gnad.SpringModulith.module.Task.domain.entity.Task;
 import dev.gnad.SpringModulith.module.Task.service.TaskService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
@@ -20,6 +19,7 @@ import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.function.Function;
 
 @RestController
 @RequestMapping("/api/task")
@@ -40,7 +40,7 @@ public class TaskController {
             @PathVariable("id") Integer id)
     {
 
-             TaskDto response= this.taskService.mapToResponse(this.taskService.findById(id));
+             TaskDto response= this.taskService.findById(id);
              return ResponseEntity.ok(
                      ApiResponse.success(
                              response,
@@ -53,12 +53,10 @@ public class TaskController {
             @AuthenticationPrincipal Jwt jwt,
             @Valid @RequestBody()CreateTaskDto taskDto)
     {
-        System.out.println(taskDto);
-        TaskDto response = this.taskService.mapToResponse(
-                this.taskService.create(
+        TaskDto response = this.taskService.create(
                         taskDto,
                         CurrentUserProvider.getUserId(jwt)
-                ));
+                );
         return ResponseEntity.ok(
                 ApiResponse.success(
                         response,
@@ -68,15 +66,15 @@ public class TaskController {
 
     @GetMapping("/todo/{id}")
     public ResponseEntity<ApiResponse<PageResponse<TaskDto>>> findByToDoId(
-            @RequestParam(required = false) List<String> filter,
+            @RequestParam(required = false) List<String> filters,
             @PathVariable("id") Integer toDoId,
             Pageable pageable)
     {
-            List<FilterCondition>  conditions = FilterSpecification.parseFilters(filter);
+            List<FilterCondition>  conditions = FilterSpecification.parseFilters(filters);
 
-            Page<Task> tasks = this.taskService.findByToDoId(toDoId, pageable, conditions);
+            Page<TaskDto> tasks = this.taskService.findByToDoId(toDoId, pageable, conditions);
 
-            PageResponse<TaskDto> response = PageResponse.from(tasks, this.taskService::mapToResponse);
+            PageResponse<TaskDto> response = PageResponse.from(tasks, Function.identity());
             return ResponseEntity.ok(
                     ApiResponse.success(
                             response,
@@ -90,8 +88,7 @@ public class TaskController {
             @PathVariable("id") Integer id,
             @RequestBody UpdateTaskDto updateTaskDto){
 
-        TaskDto response = this.taskService.mapToResponse(
-                this.taskService.updateById(id, updateTaskDto));
+        TaskDto response = this.taskService.updateById(id, updateTaskDto);
 
         return ResponseEntity.ok(
                 ApiResponse.success(
@@ -105,11 +102,10 @@ public class TaskController {
     public ResponseEntity<ApiResponse<TaskDto>> markDone(
             @PathVariable("id") Integer id,
             @AuthenticationPrincipal Jwt jwt){
-        TaskDto response = this.taskService.mapToResponse(
-                this.taskService.markDone(
+        TaskDto response = this.taskService.markDone(
                         id,
                         CurrentUserProvider.getUserId(jwt)
-                ));
+                );
 
         return ResponseEntity.ok(
                 ApiResponse.success(

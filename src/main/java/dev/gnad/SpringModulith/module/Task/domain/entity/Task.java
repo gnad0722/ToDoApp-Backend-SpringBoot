@@ -16,7 +16,6 @@ import java.time.LocalDateTime;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Data
 public class Task extends BaseEntity {
 
     private String name;
@@ -46,5 +45,59 @@ public class Task extends BaseEntity {
     @JsonManagedReference
     private Note note;
 
+    public String getName() {
+        return name;
+    }
 
+    public void setName(String name) {
+        this.name = name;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public LocalDateTime getExpectStart() {
+        return expectStart;
+    }
+
+    public void setExpectStart(LocalDateTime expectStart) {
+        this.expectStart = expectStart;
+    }
+
+    public ToDoList getToDoList() {
+        return toDoList;
+    }
+
+    public void setToDoList(ToDoList toDoList) {
+        this.toDoList = toDoList;
+    }
+
+    public LocalDateTime getExpectEnd() {
+        return expectEnd;
+    }
+
+    public void setExpectEnd(LocalDateTime expectEnd) {
+        this.expectEnd = expectEnd;
+    }
+
+    public boolean isDone() {
+        return isDone;
+    }
+
+    public void setDone(boolean done) {
+        isDone = done;
+    }
+
+    public Note getNote() {
+        return note;
+    }
+
+    public void setNote(Note note) {
+        this.note = note;
+    }
 }

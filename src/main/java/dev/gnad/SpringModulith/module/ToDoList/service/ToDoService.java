@@ -2,21 +2,17 @@ package dev.gnad.SpringModulith.module.ToDoList.service;
 
 import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
 import dev.gnad.SpringModulith.common.cache.constants.CacheName;
-import dev.gnad.SpringModulith.common.schedule.domain.entity.Schedule;
 import dev.gnad.SpringModulith.common.schedule.service.ScheduleService;
 import dev.gnad.SpringModulith.common.utility.filter.FilterCondition;
 import dev.gnad.SpringModulith.common.utility.filter.FilterSpecification;
-import dev.gnad.SpringModulith.module.Task.domain.entity.Task;
 import dev.gnad.SpringModulith.module.ToDoList.domain.dto.CreateToDoDto;
 import dev.gnad.SpringModulith.module.ToDoList.domain.dto.ToDoFilter;
 import dev.gnad.SpringModulith.module.ToDoList.domain.dto.ToDoResponseDto;
 import dev.gnad.SpringModulith.module.ToDoList.domain.dto.UpdateToDoDto;
 import dev.gnad.SpringModulith.module.ToDoList.domain.entity.ToDoList;
 import dev.gnad.SpringModulith.module.ToDoList.internal.repository.ToDoRepository;
-import jakarta.persistence.criteria.CriteriaBuilder;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -26,6 +22,11 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+/*
+ * A Project is a subclass of ToDoList (JOINED inheritance), so a project id is
+ * also a valid to-do id. Write operations here evict both the toDoList cache and
+ * the project cache so neither keeps a stale DTO.
+ */
 @Service
 @CacheConfig(cacheNames = CacheName.ToDoList)
 public class ToDoService {
@@ -45,49 +46,58 @@ public class ToDoService {
         this.scheduleService = scheduleService;
     }
 
-    public ToDoResponseDto mapToResponse(ToDoList toDoList) {
-        return this.toDoMappedService.toResponse(toDoList);
+    /**
+     * Returns the managed entity (not cached). Use this from other modules
+     * when an entity is needed to build a relation, e.g. Task -> ToDoList.
+     */
+    public ToDoList getReference(Integer id) {
+        return toDoRepository.findById(id).orElseThrow(
+                ()-> new NotFoundException("To-do list not found")
+        );
     }
 
+    @Cacheable(key = "#toDoId")
+    public ToDoResponseDto getToDoById(Integer toDoId, Integer userId){
 
-    @Cacheable(key = "#id")
-    public ToDoList getToDoById(Integer id, Integer userId){
-        return this.toDoRepository.findByIdAndUserId(
-                id,
+        return this.toDoMappedService.toResponse(this.toDoRepository.findByIdAndUser_Id(
+                toDoId,
                 userId
         ).orElseThrow(
-                () -> new NotFoundException("Cannot find To Do List with id: "+id+" and user Id: "+ userId)
-                );
+                () -> new NotFoundException("To-do list not found")
+                )
+        );
     }
 
 
-    public ToDoList createToDo(CreateToDoDto createToDoDto,
-                               Integer userId){
+    public ToDoResponseDto createToDo(CreateToDoDto createToDoDto,
+                                      Integer userId){
 
         ToDoList toDoList = this.toDoRepository.save(
                this.toDoMappedService.toObject(createToDoDto,userId));
         this.scheduleService.createSchedule(toDoList);
-        return toDoList;
+        return this.toDoMappedService.toResponse(toDoList);
     }
 
-    @CachePut(key = "#toDoId")
-    public ToDoList updateToDoById(
+    @CacheEvict(key = "#toDoId")
+    public ToDoResponseDto updateToDoById(
             UpdateToDoDto updateToDoDto,
             Integer toDoId,
             Integer userId
             ){
-        ToDoList toDoList = this.toDoRepository.findByIdAndUserId(
+        ToDoList toDoList = this.toDoRepository.findByIdAndUser_Id(
                 toDoId,
                 userId
         ).orElseThrow(()->
-                    new NotFoundException("Not Found To Do with Id: "+ toDoId)
+                    new NotFoundException("To-do list not found")
                 );
 
         this.toDoMappedService.patch(toDoList, updateToDoDto);
         if (updateToDoDto.startTime() != null ){
             this.scheduleService.updateRemindTime(toDoList);
         }
-        return this.toDoRepository.save(toDoList);
+        return this.toDoMappedService.toResponse(
+                this.toDoRepository.save(toDoList)
+        );
     }
 
 
@@ -95,11 +105,11 @@ public class ToDoService {
     public void deleteToDoById(
             Integer toDoId,
             Integer userId){
-        ToDoList toDoList = this.toDoRepository.findByIdAndUserId(
+        ToDoList toDoList = this.toDoRepository.findByIdAndUser_Id(
                 toDoId,
                 userId
         ).orElseThrow(()->
-                new NotFoundException("Not Found To Do with Id: "+ toDoId)
+                new NotFoundException("To-do list not found")
         );
         this.scheduleService.cancelSchedule(toDoList);
         this.toDoRepository.deleteById(toDoList.getId());
@@ -107,7 +117,7 @@ public class ToDoService {
 
 
 
-    public Page<ToDoList> findByUserId(
+    public Page<ToDoResponseDto> findByUserId(
             Integer userId,
             Pageable pageable,
             List<FilterCondition> conditionList){
@@ -122,27 +132,21 @@ public class ToDoService {
                 specification.and(
                         FilterSpecification.belongsTo(userId,"user")
         )
-                , pageable);
+                , pageable)
+                .map(this.toDoMappedService::toResponse);
     }
 
 
-    @CachePut(key = "#toDoId")
+    @CacheEvict( key = "#toDoId")
     public void changeTaskCount(Integer toDoId, Integer taskCount){
-        ToDoList toDoList = this.toDoRepository.findById(toDoId).
-                orElseThrow(()->
-                        new NotFoundException("Cannot found To Do with Id: " + toDoId)
-                        );
+        ToDoList toDoList = this.getReference(toDoId);
         toDoList.setNumTask(taskCount);
         this.toDoRepository.save(toDoList);
-
     }
 
-    @CachePut(key = "#toDoId")
+    @CacheEvict( key = "#toDoId")
     public void changeTaskCompleteCount(Integer toDoId, Integer taskCount){
-        ToDoList toDoList = this.toDoRepository.findById(toDoId).
-                orElseThrow(()->
-                        new NotFoundException("Cannot found To Do with Id: " + toDoId)
-                );
+        ToDoList toDoList = this.getReference(toDoId);
         toDoList.setNumCompleteTask(taskCount);
         this.toDoRepository.save(toDoList);
     }

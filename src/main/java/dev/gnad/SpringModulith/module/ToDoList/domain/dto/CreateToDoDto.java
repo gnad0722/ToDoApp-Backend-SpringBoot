@@ -11,6 +11,7 @@ import java.time.LocalDateTime;
 public record CreateToDoDto(
 
         @Size(min=10)
+        @NotBlank
         String topic,
 
         LocalDateTime startTime

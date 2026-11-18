@@ -2,7 +2,7 @@ package dev.gnad.SpringModulith.common.cache.serializaion.strategies;
 
 import dev.gnad.SpringModulith.common.cache.constants.CacheName;
 import dev.gnad.SpringModulith.common.cache.serializaion.SerializationStrategy;
-import dev.gnad.SpringModulith.module.Note.domain.entity.Note;
+import dev.gnad.SpringModulith.module.Note.domain.dto.NoteResponseDto;
 import org.springframework.data.redis.serializer.JacksonJsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializationContext;
 import org.springframework.stereotype.Component;
@@ -16,9 +16,9 @@ public class NoteSerializationStrategy implements SerializationStrategy {
 
     @Override
     public RedisSerializationContext.SerializationPair<?> createSerializationPair() {
-        JacksonJsonRedisSerializer<Note> serializer =
+        JacksonJsonRedisSerializer<NoteResponseDto> serializer =
                 new JacksonJsonRedisSerializer<>(
-                        Note.class
+                        NoteResponseDto.class
                 );
         return RedisSerializationContext.SerializationPair
                 .fromSerializer(serializer);

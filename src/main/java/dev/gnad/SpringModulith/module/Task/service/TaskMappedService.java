@@ -1,6 +1,7 @@
 package dev.gnad.SpringModulith.module.Task.service;
 
 import dev.gnad.SpringModulith.common.policy.PolicyFacade;
+import dev.gnad.SpringModulith.module.Note.service.NoteMappedService;
 import dev.gnad.SpringModulith.module.Task.domain.dto.CreateTaskDto;
 import dev.gnad.SpringModulith.module.Task.domain.dto.UpdateTaskDto;
 import dev.gnad.SpringModulith.module.Task.domain.dto.TaskDto;
@@ -59,8 +60,8 @@ public class TaskMappedService {
                 task.getExpectEnd(),
                 task.getCreatedAt(),
                 task.getLastModifiedAt(),
-                task.getToDoList().getId(),
-                task.getNote());
+                task.getToDoList().getId()
+        );
     }
 
     public void patch(Task task, UpdateTaskDto updateTaskDto){

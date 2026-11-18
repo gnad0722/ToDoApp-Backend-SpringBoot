@@ -1,5 +1,6 @@
 package dev.gnad.SpringModulith.module.Project.domain.dto;
 
+import dev.gnad.SpringModulith.module.Task.domain.dto.TaskDto;
 import dev.gnad.SpringModulith.module.Task.domain.entity.Task;
 import org.springframework.cglib.core.Local;
 
@@ -15,7 +16,6 @@ public record ProjectResponseDto(
         Integer numTask,
         Integer numCompleteTask,
         LocalDateTime createdAt,
-        LocalDateTime lastModifiedAt,
-        List<Task> taskList
+        LocalDateTime lastModifiedAt
 ) {
 }

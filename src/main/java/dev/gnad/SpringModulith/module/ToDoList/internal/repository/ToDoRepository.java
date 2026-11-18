@@ -12,5 +12,5 @@ import java.util.Optional;
 
 @Repository
 public interface ToDoRepository extends BaseRepository<ToDoList> {
-    Optional<ToDoList> findByIdAndUserId(Integer id, Integer userId);
+    Optional<ToDoList> findByIdAndUser_Id(Integer id, Integer userId);
 }

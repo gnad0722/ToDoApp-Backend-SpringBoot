@@ -32,9 +32,7 @@ public class AuthController {
     @GetMapping("/me")
     public ResponseEntity<ApiResponse<UserResponseDto>> getMe(@AuthenticationPrincipal Jwt jwt){
 
-        UserResponseDto response = this.authService.mapToResponse(
-                this.authService.findById(CurrentUserProvider.getUserId(jwt))
-        );
+        UserResponseDto response = this.authService.findById(CurrentUserProvider.getUserId(jwt));
         return ResponseEntity.ok(
                 ApiResponse.success(
                         response,
@@ -45,8 +43,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public ResponseEntity<ApiResponse<UserResponseDto>> register(@RequestBody @Valid RegisterDto registerDto){
-        UserResponseDto response = this.authService.mapToResponse(
-                this.authService.register(registerDto));
+        UserResponseDto response = this.authService.register(registerDto);
 
         return ResponseEntity.ok(
                 ApiResponse.success(
@@ -125,8 +122,7 @@ public class AuthController {
     public ResponseEntity<ApiResponse<UserResponseDto>> resetPassword(
             @RequestBody @Valid ResetPasswordDto resetPasswordDto
     ){
-        UserResponseDto response = this.authService.mapToResponse(
-                this.authService.updatePassword(resetPasswordDto));
+        UserResponseDto response = this.authService.updatePassword(resetPasswordDto);
 
         return ResponseEntity.ok(
                 ApiResponse.success(

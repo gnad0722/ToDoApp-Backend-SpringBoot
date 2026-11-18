@@ -1,5 +1,6 @@
 package dev.gnad.SpringModulith.module.Task.policy;
 
+import dev.gnad.SpringModulith.common.api.exception.BadRequestException;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDateTime;
@@ -13,8 +14,8 @@ public class TaskTimePolicy {
         if (startTask != null
                 && startToDo != null
                 && !startToDo.isBefore(startTask)) {
-            throw new IllegalArgumentException(
-                    "Start time of task must be after start time of To Do List."
+            throw new BadRequestException(
+                    "Task start time must be after the to-do list start time"
             );
         }
     }

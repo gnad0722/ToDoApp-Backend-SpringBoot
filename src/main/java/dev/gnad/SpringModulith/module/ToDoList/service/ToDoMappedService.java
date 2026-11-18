@@ -1,8 +1,10 @@
 package dev.gnad.SpringModulith.module.ToDoList.service;
 
 import dev.gnad.SpringModulith.common.policy.PolicyFacade;
+import dev.gnad.SpringModulith.module.Task.domain.dto.TaskDto;
 import dev.gnad.SpringModulith.module.Task.domain.dto.UpdateTaskDto;
 import dev.gnad.SpringModulith.module.Task.domain.entity.Task;
+import dev.gnad.SpringModulith.module.Task.service.TaskMappedService;
 import dev.gnad.SpringModulith.module.ToDoList.domain.dto.CreateToDoDto;
 import dev.gnad.SpringModulith.module.ToDoList.domain.dto.ToDoResponseDto;
 import dev.gnad.SpringModulith.module.ToDoList.domain.dto.UpdateToDoDto;
@@ -12,6 +14,8 @@ import dev.gnad.SpringModulith.module.Auth.service.AuthService;
 
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class ToDoMappedService {
 
@@ -20,13 +24,14 @@ public class ToDoMappedService {
     private final PolicyFacade policyFacade;
 
     public ToDoMappedService(AuthService authService,
-                            PolicyFacade policyFacade) {
+                             PolicyFacade policyFacade) {
         this.authService = authService;
 
         this.policyFacade = policyFacade;
     }
 
     public ToDoResponseDto toResponse(ToDoList toDoList ){
+
         return new ToDoResponseDto(
                 toDoList.getId(),
                 toDoList.getTopic(),
@@ -34,8 +39,7 @@ public class ToDoMappedService {
                 toDoList.getNumTask(),
                 toDoList.getNumCompleteTask(),
                 toDoList.getCreatedAt(),
-                toDoList.getLastModifiedAt(),
-                toDoList.getTaskList());
+                toDoList.getLastModifiedAt());
     }
 
     public ToDoList toObject (CreateToDoDto createToDoDto, Integer userId){
@@ -47,7 +51,7 @@ public class ToDoMappedService {
             newList.setStartTime(createToDoDto.startTime());
         }
 
-        User user = this.authService.findById(userId);
+        User user = this.authService.getReference(userId);
         newList.setUser(user);
         return newList;
     }

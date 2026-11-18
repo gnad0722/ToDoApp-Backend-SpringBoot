@@ -1,5 +1,6 @@
 package dev.gnad.SpringModulith.common.policy;
 
+import dev.gnad.SpringModulith.common.api.exception.BadRequestException;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Controller;
 
@@ -10,7 +11,7 @@ public class TimePolicy {
 
     public void validateDueDate(LocalDateTime dueDate) {
         if (dueDate != null && dueDate.isBefore(LocalDateTime.now())) {
-            throw new IllegalArgumentException(
+            throw new BadRequestException(
                     "Due date cannot be in the past"
             );
         }
@@ -23,8 +24,8 @@ public class TimePolicy {
         if (start != null
                 && end != null
                 && !start.isBefore(end)) {
-            throw new IllegalArgumentException(
-                    "Expected start time must be before expected end time"
+            throw new BadRequestException(
+                    "End time must be after start time"
             );
         }
     }

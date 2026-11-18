@@ -14,7 +14,6 @@ import org.hibernate.annotations.OnDeleteAction;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Data
 public class Note extends BaseEntity {
 
     @Column(nullable = false)
@@ -26,5 +25,19 @@ public class Note extends BaseEntity {
     @OnDelete(action = OnDeleteAction.CASCADE)
     private Task task;
 
+    public String getDescription() {
+        return description;
+    }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public Task getTask() {
+        return task;
+    }
+
+    public void setTask(Task task) {
+        this.task = task;
+    }
 }

@@ -12,7 +12,6 @@ import java.time.LocalDateTime;
 
 @EqualsAndHashCode(callSuper = true)
 @Entity
-@Data
 public class Project extends ToDoList {
 
 
@@ -22,5 +21,19 @@ public class Project extends ToDoList {
     @Column(nullable = false)
     private String description;
 
+    public String getDescription() {
+        return description;
+    }
 
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
+    public LocalDateTime getExpectEnd() {
+        return expectEnd;
+    }
+
+    public void setExpectEnd(LocalDateTime expectEnd) {
+        this.expectEnd = expectEnd;
+    }
 }

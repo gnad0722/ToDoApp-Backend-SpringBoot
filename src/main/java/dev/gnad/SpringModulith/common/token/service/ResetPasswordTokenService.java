@@ -1,6 +1,6 @@
 package dev.gnad.SpringModulith.common.token.service;
 
-import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
+import dev.gnad.SpringModulith.common.api.exception.BadRequestException;
 import dev.gnad.SpringModulith.common.cache.constants.CacheName;
 import dev.gnad.SpringModulith.common.token.domain.entity.BaseToken;
 import dev.gnad.SpringModulith.common.token.domain.entity.ResetPasswordToken;
@@ -18,6 +18,8 @@ import java.time.Instant;
 @Service
 @CacheConfig(cacheNames = CacheName.ResetToken)
 public class ResetPasswordTokenService implements TokenService{
+
+    private static final String INVALID_RESET_TOKEN = "Reset link has expired, please request a new code";
 
     private final ResetPasswordTokenRepository resetPasswordTokenRepository;
 
@@ -42,10 +44,9 @@ public class ResetPasswordTokenService implements TokenService{
 //    )
     private BaseToken getToken(String rawToken){
         String hashToken = TokenCommon.hashToken(rawToken);
-        System.out.println(hashToken);
         return this.resetPasswordTokenRepository
                 .findByTokenHash(hashToken).orElseThrow(
-                        ()->new NotFoundException("Invalid Refresh Token")
+                        ()->new BadRequestException(INVALID_RESET_TOKEN)
                 );
     }
 
@@ -55,11 +56,11 @@ public class ResetPasswordTokenService implements TokenService{
         BaseToken token = this.getToken(rawToken);
 
         if (token.isExpired()){
-            throw new RuntimeException("Reset Token is invalid");
+            throw new BadRequestException(INVALID_RESET_TOKEN);
         }
 
         if (token.isRevoked()){
-            throw new RuntimeException("ResetToken is invalid");
+            throw new BadRequestException(INVALID_RESET_TOKEN);
         }
         return token;
     }

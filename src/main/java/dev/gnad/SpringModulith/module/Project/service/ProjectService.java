@@ -12,7 +12,6 @@ import dev.gnad.SpringModulith.module.Project.domain.entity.Project;
 import dev.gnad.SpringModulith.module.Project.internal.repository.ProjectRepository;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
-import org.springframework.cache.annotation.CachePut;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.data.domain.Page;
@@ -21,10 +20,15 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
-import java.util.logging.Filter;
 
+/*
+ * Projects have their own cache: it holds ProjectResponseDto, while the toDoList
+ * cache holds ToDoResponseDto. Sharing one cache would make the deserializer
+ * return the wrong type. Writes also evict the toDoList entry because a project
+ * can be read through the to-do endpoints too.
+ */
 @Service
-@CacheConfig(cacheNames = CacheName.ToDoList)
+@CacheConfig(cacheNames = CacheName.Project)
 public class ProjectService {
 
     private final ProjectRepository projectRepository;
@@ -39,29 +43,29 @@ public class ProjectService {
         this.projectMappedService = projectMappedService;
     }
 
-    public ProjectResponseDto toResponse(Project project){
-        return this.projectMappedService.toResponse(project);
-    }
-
-    public Project create(CreateProjectDto createProjectDto,
-                          Integer userId){
-        return this.projectRepository.save(
-                this.projectMappedService.toObject(createProjectDto, userId)
+    public ProjectResponseDto create(CreateProjectDto createProjectDto,
+                                     Integer userId){
+        return this.projectMappedService.toResponse(
+                this.projectRepository.save(
+                        this.projectMappedService.toObject(createProjectDto, userId)
+                )
         );
     }
 
     @Cacheable(key = "#id")
-    public Project findById(Integer id ,
-                            Integer userId){
-        return this.projectRepository.findByIdAndUserId(id, userId).
-                orElseThrow(()->
-                        new NotFoundException("Not Found Project with id: "+ id +"owned by user Id: "+ userId)
-                );
+    public ProjectResponseDto findById(Integer id ,
+                                       Integer userId){
+        return this.projectMappedService.toResponse(
+                this.projectRepository.findByIdAndUser_Id(id, userId).
+                        orElseThrow(()->
+                                new NotFoundException("Project not found")
+                        )
+        );
     }
 
-    public Page<Project> findByUserId(Integer userId,
-                                      Pageable pageable,
-                                      List<FilterCondition> conditions){
+    public Page<ProjectResponseDto> findByUserId(Integer userId,
+                                                 Pageable pageable,
+                                                 List<FilterCondition> conditions){
         Specification<Project> specification = FilterSpecification.build(
                 conditions,
                 ProjectFilter.PROJECT_FILTER_FIELDS
@@ -70,31 +74,34 @@ public class ProjectService {
                 specification.and(
                         FilterSpecification.belongsTo(userId,"user")
                 )
-                , pageable);
+                , pageable)
+                .map(this.projectMappedService::toResponse);
     }
 
-    @CachePut(key = "#id")
-    public Project updateById(UpdateProjectDto updateProjectDto,
-                              Integer id,
-                              Integer userId
+    @CacheEvict( key = "#id")
+    public ProjectResponseDto updateById(UpdateProjectDto updateProjectDto,
+                                         Integer id,
+                                         Integer userId
     ){
-        Project project = this.projectRepository.findByIdAndUserId(id, userId).
+        Project project = this.projectRepository.findByIdAndUser_Id(id, userId).
                 orElseThrow(()->
-                        new NotFoundException("Not Found Project with id: "+ id +"owned by user Id: "+ userId)
+                        new NotFoundException("Project not found")
                 );
 
         this.projectMappedService.patch(project,updateProjectDto);
 
-        return this.projectRepository.save(project);
+        return this.projectMappedService.toResponse(
+                this.projectRepository.save(project)
+        );
     }
 
 
-    @CacheEvict(key = "#id")
+    @CacheEvict( key = "#id")
     public void deleteById(Integer id,
                            Integer userId){
-        Project project = this.projectRepository.findByIdAndUserId(id, userId).
+        Project project = this.projectRepository.findByIdAndUser_Id(id, userId).
                 orElseThrow(()->
-                        new NotFoundException("Not Found Project with id: "+ id +"owned by user Id: "+ userId)
+                        new NotFoundException("Project not found")
                 );
 
         this.projectRepository.deleteById(project.getId());

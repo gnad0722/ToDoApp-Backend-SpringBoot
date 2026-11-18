@@ -19,7 +19,7 @@ public class NoteMappedService {
     public Note toObject(NoteCreateDto createDto){
         Note note = new Note();
         note.setDescription(createDto.description());
-        Task task = this.taskService.findById(createDto.taskId());
+        Task task = this.taskService.getReference(createDto.taskId());
         note.setTask(task);
         return note;
     }

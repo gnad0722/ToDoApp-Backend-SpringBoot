@@ -1,5 +1,6 @@
 package dev.gnad.SpringModulith.module.Auth.service;
 
+import dev.gnad.SpringModulith.common.api.exception.ConflictException;
 import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
 import dev.gnad.SpringModulith.common.email.EmailSenderService;
 import dev.gnad.SpringModulith.common.email.utility.EmailGenerator;
@@ -45,28 +46,27 @@ public class AuthService {
         this.authenticationTokenService = authenticationTokenService;
     }
 
-    public UserResponseDto mapToResponse(User user){
-        return this.userMappedService.toResponse(user);
-    }
-
-
     @Transactional
-    public User register(RegisterDto registerDto){
+    public UserResponseDto register(RegisterDto registerDto){
 
             if (userRepository.existsByEmail(registerDto.email())){
-                throw new IllegalArgumentException(
-                        "Email is already registered."
-                );
+                throw new ConflictException("Email is already registered");
+            }
+
+            if (userRepository.existsByUsername(registerDto.username())){
+                throw new ConflictException("Username is already taken");
             }
 
             String hashedPassword = this.securityService.hashPassword(registerDto.password());
 
-            return this.userRepository.save(
+            User user = this.userRepository.save(
                     this.userMappedService.toObject(new RegisterDto(
                             registerDto.username()
                             ,hashedPassword
                             ,registerDto.email()
                     )));
+
+            return this.userMappedService.toResponse(user);
 
     }
 
@@ -99,7 +99,7 @@ public class AuthService {
     public void sendOtpToEmail(EmailDto emailDto){
         User user = this.userRepository.findByEmail(emailDto.email())
                 .orElseThrow(()->
-                new NotFoundException("Not found the user with email: "+emailDto.email())
+                new NotFoundException("No account found with this email")
                 );
 
         String otp = this.otpService.createOtp(user);
@@ -123,7 +123,7 @@ public class AuthService {
     }
 
     @Transactional
-    public User updatePassword(ResetPasswordDto resetPasswordDto){
+    public UserResponseDto updatePassword(ResetPasswordDto resetPasswordDto){
 
         BaseToken resetPasswordToken = this.authenticationTokenService.validateResetToken(
                 resetPasswordDto.resetPasswordToken());
@@ -136,14 +136,22 @@ public class AuthService {
         this.userRepository.save(user);
         this.authenticationTokenService.revokeResetToken(resetPasswordDto.resetPasswordToken());
 
-        return user;
+        return this.userMappedService.toResponse(user);
     }
 
-    public User findById(Integer id){
+    /**
+     * Returns the managed entity. Use this from other modules when an entity
+     * is needed to build a relation, e.g. ToDoList -> User.
+     */
+    public User getReference(Integer id){
         return this.userRepository.findById(id)
                 .orElseThrow(()->
-                new NotFoundException("Not found the user with id: "+id)
+                new NotFoundException("User not found")
         );
+    }
+
+    public UserResponseDto findById(Integer id){
+        return this.userMappedService.toResponse(this.getReference(id));
     }
 
 

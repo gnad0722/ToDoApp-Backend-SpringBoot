@@ -17,7 +17,9 @@ public class ProjectMappedService {
 
     private final PolicyFacade policyFacade;
 
-    public ProjectMappedService(AuthService authService, PolicyFacade policyFacade) {
+    public ProjectMappedService(AuthService authService,
+                                PolicyFacade policyFacade
+                               ) {
         this.authService = authService;
         this.policyFacade = policyFacade;
     }
@@ -33,8 +35,7 @@ public class ProjectMappedService {
                 project.getNumTask(),
                 project.getNumCompleteTask(),
                 project.getCreatedAt(),
-                project.getLastModifiedAt(),
-                project.getTaskList()
+                project.getLastModifiedAt()
         );
     }
 
@@ -61,7 +62,7 @@ public class ProjectMappedService {
 
 
 
-        User user = this.authService.findById(userId);
+        User user = this.authService.getReference(userId);
 
         newProject.setUser(user);
 
@@ -74,8 +75,8 @@ public class ProjectMappedService {
             project.setTopic(updateProjectDto.topic());
         }
 
-        if (updateProjectDto.desription() != null){
-            project.setDescription(updateProjectDto.desription());
+        if (updateProjectDto.description() != null){
+            project.setDescription(updateProjectDto.description());
         }
 
         if (updateProjectDto.startTime() != null){
