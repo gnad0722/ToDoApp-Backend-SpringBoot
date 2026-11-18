@@ -3,6 +3,7 @@ package dev.gnad.SpringModulith.module.ToDoList.domain.entity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import dev.gnad.SpringModulith.common.domain.BaseEntity;
+import dev.gnad.SpringModulith.common.schedule.domain.entity.Schedule;
 import dev.gnad.SpringModulith.module.Task.domain.entity.Task;
 import dev.gnad.SpringModulith.module.Auth.domain.entity.User;
 import jakarta.persistence.*;
@@ -29,6 +30,13 @@ public class ToDoList extends BaseEntity {
     @JsonManagedReference
     private List<Task> taskList ;
 
+    @OneToOne(
+            mappedBy = "toDoList",
+            cascade = CascadeType.REMOVE,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
+    private Schedule schedule;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
@@ -91,5 +99,13 @@ public class ToDoList extends BaseEntity {
 
     public void setStartTime(LocalDateTime startTime) {
         this.startTime = startTime;
+    }
+
+    public Schedule getSchedule() {
+        return schedule;
+    }
+
+    public void setSchedule(Schedule schedule) {
+        this.schedule = schedule;
     }
 }

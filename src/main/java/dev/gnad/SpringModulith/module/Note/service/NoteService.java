@@ -8,6 +8,8 @@ import dev.gnad.SpringModulith.module.Note.domain.dto.NoteResponseDto;
 import dev.gnad.SpringModulith.module.Note.domain.dto.UpdateNoteDto;
 import dev.gnad.SpringModulith.module.Note.domain.entity.Note;
 import dev.gnad.SpringModulith.module.Note.internal.repository.NoteRepository;
+import dev.gnad.SpringModulith.module.Task.domain.entity.Task;
+import jakarta.transaction.Transactional;
 import org.springframework.cache.annotation.CacheConfig;
 import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.Cacheable;
@@ -31,6 +33,7 @@ public class NoteService {
         this.eventPublisher = eventPublisher;
     }
 
+    @Transactional
     public NoteResponseDto create(NoteCreateDto createDto){
         if (this.noteRepository.existsByTask_id(createDto.taskId())){
             throw new ConflictException("This task already has a note");
@@ -52,6 +55,7 @@ public class NoteService {
     }
 
     @CacheEvict(key = "#taskId")
+    @Transactional
     public NoteResponseDto updateByTaskId(Integer taskId, UpdateNoteDto updateNoteDto){
         Note note = this.noteRepository.findByTask_id(taskId)
                 .orElseThrow(()->
@@ -65,6 +69,7 @@ public class NoteService {
     }
 
     @CacheEvict(key = "#taskId")
+    @Transactional
     public void deleteByTaskId(Integer taskId){
         Note note = this.noteRepository.findByTask_id(taskId)
                 .orElseThrow(()->

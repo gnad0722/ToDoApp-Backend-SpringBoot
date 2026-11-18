@@ -40,8 +40,10 @@ public class Task extends BaseEntity {
 
     @OneToOne(
             mappedBy = "task",
-            cascade = CascadeType.REMOVE,
-            orphanRemoval = true)
+            cascade = CascadeType.ALL,
+            orphanRemoval = true,
+            fetch = FetchType.LAZY
+    )
     @JsonManagedReference
     private Note note;
 

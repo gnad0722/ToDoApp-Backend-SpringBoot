@@ -111,7 +111,6 @@ public class ToDoService {
         ).orElseThrow(()->
                 new NotFoundException("To-do list not found")
         );
-        this.scheduleService.cancelSchedule(toDoList);
         this.toDoRepository.deleteById(toDoList.getId());
     }
 
