@@ -6,6 +6,7 @@ import dev.gnad.SpringModulith.common.email.EmailSenderService;
 import dev.gnad.SpringModulith.common.email.utility.EmailGenerator;
 import dev.gnad.SpringModulith.common.otp.domain.entity.Otp;
 import dev.gnad.SpringModulith.common.otp.service.OtpService;
+import dev.gnad.SpringModulith.common.policy.PolicyFacade;
 import dev.gnad.SpringModulith.common.security.service.facade.AuthenticationTokenService;
 import dev.gnad.SpringModulith.common.security.service.facade.SecurityService;
 import dev.gnad.SpringModulith.common.token.domain.entity.BaseToken;
@@ -36,7 +37,8 @@ public class AuthService {
                        OtpService otpService,
                        EmailSenderService emailSenderService4,
                        SecurityService securityService,
-                       AuthenticationTokenService authenticationTokenService) {
+                       AuthenticationTokenService authenticationTokenService
+                       ) {
         this.userRepository = userRepository;
         this.publisher = publisher;
         this.userMappedService = userMappedService;
@@ -49,13 +51,11 @@ public class AuthService {
     @Transactional
     public UserResponseDto register(RegisterDto registerDto){
 
+
             if (userRepository.existsByEmail(registerDto.email())){
                 throw new ConflictException("Email is already registered");
             }
 
-            if (userRepository.existsByUsername(registerDto.username())){
-                throw new ConflictException("Username is already taken");
-            }
 
             String hashedPassword = this.securityService.hashPassword(registerDto.password());
 
@@ -63,7 +63,8 @@ public class AuthService {
                     this.userMappedService.toObject(new RegisterDto(
                             registerDto.username()
                             ,hashedPassword
-                            ,registerDto.email()
+                            ,registerDto.email(),
+                            registerDto.birthday()
                     )));
 
             return this.userMappedService.toResponse(user);
@@ -183,4 +184,15 @@ public class AuthService {
         return new AuthResponse(accessToken, refreshToken, "Bearer");
     }
 
+
+    @Transactional
+    public UserResponseDto updateProfile(Integer id, UpdateUserDto updateUserDto){
+        User user = this.userRepository.findById(id).orElseThrow(
+                ()->new NotFoundException("User Not Found")
+        );
+
+        this.userMappedService.patch(updateUserDto,user);
+        this.userRepository.save(user);
+        return this.userMappedService.toResponse(user);
+    }
 }

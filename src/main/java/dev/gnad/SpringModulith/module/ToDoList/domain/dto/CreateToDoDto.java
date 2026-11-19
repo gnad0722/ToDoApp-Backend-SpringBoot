@@ -14,6 +14,7 @@ public record CreateToDoDto(
         @NotBlank
         String topic,
 
+        @NotNull
         LocalDateTime startTime
 ){
 }

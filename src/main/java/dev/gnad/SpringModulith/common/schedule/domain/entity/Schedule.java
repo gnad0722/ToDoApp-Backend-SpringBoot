@@ -14,7 +14,6 @@ import java.time.LocalDateTime;
 
 @Entity
 @EqualsAndHashCode(callSuper = true)
-@Data
 public class Schedule extends BaseEntity {
 
     @OneToOne(fetch = FetchType.LAZY)
@@ -33,4 +32,35 @@ public class Schedule extends BaseEntity {
     @Column()
     private LocalDateTime sendAt;
 
+    public ToDoList getToDoList() {
+        return toDoList;
+    }
+
+    public void setToDoList(ToDoList toDoList) {
+        this.toDoList = toDoList;
+    }
+
+    public LocalDateTime getSendAt() {
+        return sendAt;
+    }
+
+    public void setSendAt(LocalDateTime sendAt) {
+        this.sendAt = sendAt;
+    }
+
+    public ScheduleStatus getStatus() {
+        return status;
+    }
+
+    public void setStatus(ScheduleStatus status) {
+        this.status = status;
+    }
+
+    public LocalDateTime getRemindAt() {
+        return remindAt;
+    }
+
+    public void setRemindAt(LocalDateTime remindAt) {
+        this.remindAt = remindAt;
+    }
 }

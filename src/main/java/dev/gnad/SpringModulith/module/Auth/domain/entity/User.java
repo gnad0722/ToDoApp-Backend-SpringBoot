@@ -11,6 +11,7 @@ import lombok.EqualsAndHashCode;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @EqualsAndHashCode(callSuper = true)
@@ -29,6 +30,10 @@ public class User extends BaseEntity {
     private String password;
 
 
+    @Column(nullable = false)
+    private LocalDateTime birthday;
+
+
     @OneToMany(
             mappedBy = "user",
             cascade = CascadeType.REMOVE,
@@ -37,6 +42,13 @@ public class User extends BaseEntity {
     @JsonManagedReference
     private List<ToDoList> toDoList;
 
+    public LocalDateTime getBirthday() {
+        return birthday;
+    }
+
+    public void setBirthday(LocalDateTime birthday) {
+        this.birthday = birthday;
+    }
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)

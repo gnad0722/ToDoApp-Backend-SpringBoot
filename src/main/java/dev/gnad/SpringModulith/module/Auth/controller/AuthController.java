@@ -132,4 +132,18 @@ public class AuthController {
         );
     }
 
+    @PatchMapping("/update-profile")
+    public ResponseEntity<ApiResponse<UserResponseDto>> updateProfile(
+            @RequestBody @Valid UpdateUserDto updateUserDto,
+            @AuthenticationPrincipal Jwt jwt
+    ){
+        UserResponseDto response = this.authService.updateProfile(CurrentUserProvider.getUserId(jwt),updateUserDto);
+
+        return ResponseEntity.ok(
+                ApiResponse.success(
+                        response,
+                        "Update Profile Successfully"
+                )
+        );
+    }
 }
