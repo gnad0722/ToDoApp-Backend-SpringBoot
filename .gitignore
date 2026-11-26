@@ -34,4 +34,4 @@ build/
 
 
 ## Firebase Clouding ##
-credentials/
+src/main/resources/firebase/*.json
