@@ -1,14 +1,16 @@
 package dev.gnad.SpringModulith.common.schedule.service;
 
 import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
-import dev.gnad.SpringModulith.common.email.EmailSenderService;
 import dev.gnad.SpringModulith.common.email.utility.EmailGenerator;
+import dev.gnad.SpringModulith.common.notification.domain.MessageType;
+import dev.gnad.SpringModulith.common.notification.service.NotificationService;
 import dev.gnad.SpringModulith.common.schedule.domain.Enum.ScheduleStatus;
 import dev.gnad.SpringModulith.common.schedule.domain.entity.Schedule;
 import dev.gnad.SpringModulith.common.schedule.internal.repository.ScheduleRepository;
 import dev.gnad.SpringModulith.common.schedule.policy.SchedulePolicy;
-import dev.gnad.SpringModulith.module.Task.domain.entity.Task;
 import dev.gnad.SpringModulith.module.ToDoList.domain.entity.ToDoList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -17,17 +19,18 @@ import java.util.List;
 
 @Service
 public class ScheduleService {
+    private static final Logger log = LoggerFactory.getLogger(ScheduleService.class);
     private final ScheduleRepository scheduleRepository;
 
     private final SchedulePolicy schedulePolicy;
-    private final EmailSenderService emailSenderService;
+    private final NotificationService notificationService;
 
     public ScheduleService(ScheduleRepository scheduleRepository,
                            SchedulePolicy schedulePolicy,
-                           EmailSenderService emailSenderService) {
+                           NotificationService notificationService) {
         this.scheduleRepository = scheduleRepository;
         this.schedulePolicy = schedulePolicy;
-        this.emailSenderService = emailSenderService;
+        this.notificationService = notificationService;
     }
 
     public void createSchedule(ToDoList toDoList){
@@ -66,9 +69,21 @@ public class ScheduleService {
                 .map(Schedule::getToDoList)
                 .toList();
 
+        // In-app reminder for each to-do list starting today (stored + pushed via FCM).
+        for (ToDoList toDoList : toDoLists) {
+            try {
+                notificationService.notify(
+                        toDoList.getUser().getId(),
+                        MessageType.TODO_LIST_DUE,
+                        toDoList.getTopic());
+            } catch (Exception e) {
+                log.error("In-app reminder failed for to-do list {}", toDoList.getId(), e);
+            }
+        }
+
         ScheduleStatus result;
         try {
-            emailSenderService.sendEmail(
+            notificationService.sendEmailMessage(
                     recipientEmail,
                     EmailGenerator.generateDailyToDoEmail(toDoLists),
                     "Your Task List Today");

@@ -2,6 +2,8 @@ package dev.gnad.SpringModulith.module.ToDoList.service;
 
 import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
 import dev.gnad.SpringModulith.common.cache.constants.CacheName;
+import dev.gnad.SpringModulith.common.notification.domain.MessageType;
+import dev.gnad.SpringModulith.common.notification.service.NotificationService;
 import dev.gnad.SpringModulith.common.schedule.service.ScheduleService;
 import dev.gnad.SpringModulith.common.utility.filter.FilterCondition;
 import dev.gnad.SpringModulith.common.utility.filter.FilterSpecification;
@@ -35,15 +37,18 @@ public class ToDoService {
     private final ApplicationEventPublisher publisher;
     private final ToDoMappedService toDoMappedService;
     private final ScheduleService scheduleService;
+    private final NotificationService notificationService;
 
     public ToDoService(ToDoRepository toDoRepository,
                        ApplicationEventPublisher publisher,
                        ToDoMappedService toDoMappedService,
-                       ScheduleService scheduleService){
+                       ScheduleService scheduleService,
+                       NotificationService notificationService){
         this.publisher = publisher;
         this.toDoRepository = toDoRepository;
         this.toDoMappedService = toDoMappedService;
         this.scheduleService = scheduleService;
+        this.notificationService = notificationService;
     }
 
     /**
@@ -75,6 +80,12 @@ public class ToDoService {
         ToDoList toDoList = this.toDoRepository.save(
                this.toDoMappedService.toObject(createToDoDto,userId));
         this.scheduleService.createSchedule(toDoList);
+
+        this.notificationService.notify(
+                userId,
+                MessageType.TODO_LIST_CREATED,
+                toDoList.getTopic()
+        );
         return this.toDoMappedService.toResponse(toDoList);
     }
 
@@ -95,9 +106,14 @@ public class ToDoService {
         if (updateToDoDto.startTime() != null ){
             this.scheduleService.updateRemindTime(toDoList);
         }
-        return this.toDoMappedService.toResponse(
-                this.toDoRepository.save(toDoList)
+        ToDoList saved = this.toDoRepository.save(toDoList);
+
+        this.notificationService.notify(
+                userId,
+                MessageType.TODO_LIST_UPDATED,
+                saved.getTopic()
         );
+        return this.toDoMappedService.toResponse(saved);
     }
 
 

@@ -2,11 +2,10 @@ package dev.gnad.SpringModulith.module.Auth.service;
 
 import dev.gnad.SpringModulith.common.api.exception.ConflictException;
 import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
-import dev.gnad.SpringModulith.common.email.EmailSenderService;
 import dev.gnad.SpringModulith.common.email.utility.EmailGenerator;
+import dev.gnad.SpringModulith.common.notification.service.NotificationService;
 import dev.gnad.SpringModulith.common.otp.domain.entity.Otp;
 import dev.gnad.SpringModulith.common.otp.service.OtpService;
-import dev.gnad.SpringModulith.common.policy.PolicyFacade;
 import dev.gnad.SpringModulith.common.security.service.facade.AuthenticationTokenService;
 import dev.gnad.SpringModulith.common.security.service.facade.SecurityService;
 import dev.gnad.SpringModulith.common.token.domain.entity.BaseToken;
@@ -26,7 +25,7 @@ public class AuthService {
     private final ApplicationEventPublisher publisher;
     private final UserMappedService userMappedService;
     private final OtpService otpService;
-    private final EmailSenderService emailSenderService;
+    private final NotificationService notificationService;
     private final SecurityService securityService;
     private final AuthenticationTokenService authenticationTokenService;
 
@@ -35,7 +34,7 @@ public class AuthService {
                        ApplicationEventPublisher publisher,
                        UserMappedService userMappedService,
                        OtpService otpService,
-                       EmailSenderService emailSenderService4,
+                       NotificationService notificationService,
                        SecurityService securityService,
                        AuthenticationTokenService authenticationTokenService
                        ) {
@@ -43,7 +42,7 @@ public class AuthService {
         this.publisher = publisher;
         this.userMappedService = userMappedService;
         this.otpService = otpService;
-        this.emailSenderService = emailSenderService4;
+        this.notificationService = notificationService;
         this.securityService = securityService;
         this.authenticationTokenService = authenticationTokenService;
     }
@@ -105,7 +104,7 @@ public class AuthService {
 
         String otp = this.otpService.createOtp(user);
 
-        this.emailSenderService.sendEmail(
+        this.notificationService.sendEmailMessage(
                 user.getEmail(),
                 EmailGenerator.generateOtpEmail(otp),
                 "Password Reset OTP"

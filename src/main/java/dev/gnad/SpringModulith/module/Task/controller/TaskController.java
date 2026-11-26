@@ -86,9 +86,14 @@ public class TaskController {
     @PatchMapping("/{id}")
     public ResponseEntity<ApiResponse<TaskDto>> updateByTaskId(
             @PathVariable("id") Integer id,
-            @RequestBody UpdateTaskDto updateTaskDto){
+            @RequestBody UpdateTaskDto updateTaskDto,
+            @AuthenticationPrincipal Jwt jwt){
 
-        TaskDto response = this.taskService.updateById(id, updateTaskDto);
+        TaskDto response = this.taskService.updateById(
+                id,
+                updateTaskDto,
+                CurrentUserProvider.getUserId(jwt)
+        );
 
         return ResponseEntity.ok(
                 ApiResponse.success(

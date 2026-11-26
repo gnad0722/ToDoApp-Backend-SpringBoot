@@ -2,6 +2,8 @@ package dev.gnad.SpringModulith.module.Task.service;
 
 import dev.gnad.SpringModulith.common.api.exception.NotFoundException;
 import dev.gnad.SpringModulith.common.cache.constants.CacheName;
+import dev.gnad.SpringModulith.common.notification.domain.MessageType;
+import dev.gnad.SpringModulith.common.notification.service.NotificationService;
 import dev.gnad.SpringModulith.common.utility.filter.FilterCondition;
 import dev.gnad.SpringModulith.common.utility.filter.FilterSpecification;
 import dev.gnad.SpringModulith.module.Task.domain.dto.CreateTaskDto;
@@ -34,16 +36,20 @@ public class TaskService {
     private final TaskMappedService taskMappedService;
     private final ToDoService toDoService;
     private final TaskPolicyFacade taskPolicyFacade;
+    private final NotificationService notificationService;
 
     public TaskService(TaskRepository taskRepository,
                        ApplicationEventPublisher publisher,
                        TaskMappedService taskMappedService,
-                       ToDoService toDoService, TaskPolicyFacade taskPolicyFacade) {
+                       ToDoService toDoService,
+                       TaskPolicyFacade taskPolicyFacade,
+                       NotificationService notificationService) {
         this.taskRepository = taskRepository;
         this.publisher = publisher;
         this.taskMappedService = taskMappedService;
         this.toDoService = toDoService;
         this.taskPolicyFacade = taskPolicyFacade;
+        this.notificationService = notificationService;
     }
 
     /**
@@ -77,6 +83,12 @@ public class TaskService {
                 toDoList.getNumTask()+1
         );
 
+        this.notificationService.notify(
+                userId,
+                MessageType.TASK_CREATED,
+                newTask.getName()
+        );
+
         return this.taskMappedService.toResponse(newTask);
     }
 
@@ -96,14 +108,20 @@ public class TaskService {
     }
 
     @CacheEvict(key = "#taskId")
-    public TaskDto updateById(Integer taskId, UpdateTaskDto updateTaskDto){
+    public TaskDto updateById(Integer taskId, UpdateTaskDto updateTaskDto, Integer userId){
         Task task = this.taskRepository.findById(taskId).orElseThrow(()->
                 new NotFoundException("Task not found")
                 );
         taskMappedService.patch(task, updateTaskDto);
-        return this.taskMappedService.toResponse(
-                this.taskRepository.save(task)
+        Task saved = this.taskRepository.save(task);
+
+        this.notificationService.notify(
+                userId,
+                MessageType.TASK_UPDATED,
+                saved.getName()
         );
+
+        return this.taskMappedService.toResponse(saved);
     }
 
     @Transactional
